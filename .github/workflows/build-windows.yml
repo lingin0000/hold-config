@@ -14,15 +14,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-    
+    # 先安装 pnpm，再设置 Node.js
     - name: Install pnpm
       uses: pnpm/action-setup@v2
       with:
         version: latest
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'pnpm'  # 使用 pnpm 缓存
     
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
