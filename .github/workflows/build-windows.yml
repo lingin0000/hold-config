@@ -25,6 +25,7 @@ jobs:
       with:
         node-version: '20'
         cache: 'pnpm'  # 使用 pnpm 缓存
+        cache-dependency-path: 'pnpm-lock.yaml'  # 指定 pnpm 锁文件路径
     
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
