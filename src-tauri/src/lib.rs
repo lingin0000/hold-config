@@ -1,13 +1,14 @@
 // 顶部 use 行
+use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
+use tauri::image::Image;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
     tray::TrayIconBuilder,
-    Emitter, Manager
-};
-use tauri::image::Image;
+    Emitter, Manager,
+}; // 新增：用于生成时间戳
 
 #[derive(Debug, Serialize, Deserialize)]
 struct EnvFile {
@@ -147,6 +148,28 @@ fn save_project_config(config: ProjectConfig) -> Result<(), String> {
     fs::write(config_path, content).map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+fn export_project_config(project_data: String, project_name: String) -> Result<String, String> {
+    // 确保 D:\temp 目录存在
+    let temp_dir = Path::new("D:\\temp");
+    if !temp_dir.exists() {
+        fs::create_dir_all(temp_dir).map_err(|e| format!("创建目录失败: {}", e))?;
+    }
+
+    // 生成带时间戳的文件名
+    let now: DateTime<Local> = Local::now();
+    let timestamp = now.format("%Y%m%d_%H%M%S").to_string();
+    let filename = format!("{}_{}.json", project_name, timestamp);
+
+    let file_path = temp_dir.join(filename);
+
+    // 写入文件
+    fs::write(&file_path, project_data).map_err(|e| format!("写入文件失败: {}", e))?;
+
+    // 返回导出的文件路径
+    Ok(file_path.to_string_lossy().to_string())
+}
+
 // 更新托盘菜单的命令
 #[tauri::command]
 fn update_tray_menu(app: tauri::AppHandle, projects: Vec<TrayProjectData>) -> Result<(), String> {
@@ -159,7 +182,10 @@ fn update_tray_menu(app: tauri::AppHandle, projects: Vec<TrayProjectData>) -> Re
 
 // 构建托盘菜单
 // 构建托盘菜单
-fn build_tray_menu(app: &tauri::AppHandle, projects: Vec<TrayProjectData>) -> Result<tauri::menu::Menu<tauri::Wry>, Box<dyn std::error::Error>> {
+fn build_tray_menu(
+    app: &tauri::AppHandle,
+    projects: Vec<TrayProjectData>,
+) -> Result<tauri::menu::Menu<tauri::Wry>, Box<dyn std::error::Error>> {
     let mut menu_builder = MenuBuilder::new(app);
 
     // 为每个项目创建子菜单（一级菜单）
@@ -182,10 +208,9 @@ fn build_tray_menu(app: &tauri::AppHandle, projects: Vec<TrayProjectData>) -> Re
 
                 // 为每个配置组创建菜单项（三级菜单）
                 for group in &category.groups {
-                    let menu_id = format!("tray-config-{}-{}-{}", project.id, env_file.path, group.id);
-                    let menu_item = MenuItemBuilder::new(&group.name)
-                        .id(&menu_id)
-                        .build(app)?;
+                    let menu_id =
+                        format!("tray-config-{}-{}-{}", project.id, env_file.path, group.id);
+                    let menu_item = MenuItemBuilder::new(&group.name).id(&menu_id).build(app)?;
                     category_submenu_builder = category_submenu_builder.item(&menu_item);
                 }
 
@@ -205,14 +230,9 @@ fn build_tray_menu(app: &tauri::AppHandle, projects: Vec<TrayProjectData>) -> Re
     let show_window = MenuItemBuilder::new("显示窗口")
         .id("show-window")
         .build(app)?;
-    let quit_app = MenuItemBuilder::new("退出")
-        .id("quit-app")
-        .build(app)?;
+    let quit_app = MenuItemBuilder::new("退出").id("quit-app").build(app)?;
 
-    menu_builder = menu_builder
-        .item(&show_window)
-        .separator()
-        .item(&quit_app);
+    menu_builder = menu_builder.item(&show_window).separator().item(&quit_app);
 
     Ok(menu_builder.build()?)
 }
@@ -223,9 +243,7 @@ fn create_tray_icon(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
     let show_window = MenuItemBuilder::new("显示窗口")
         .id("show-window")
         .build(app)?;
-    let quit_app = MenuItemBuilder::new("退出")
-        .id("quit-app")
-        .build(app)?;
+    let quit_app = MenuItemBuilder::new("退出").id("quit-app").build(app)?;
 
     // 创建初始菜单
     let menu = MenuBuilder::new(app)
@@ -256,18 +274,25 @@ fn create_tray_icon(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
                 }
                 id if id.starts_with("tray-config-") => {
                     // 解析菜单ID获取配置信息
-                    let parts: Vec<&str> = id.strip_prefix("tray-config-").unwrap().split('-').collect();
+                    let parts: Vec<&str> = id
+                        .strip_prefix("tray-config-")
+                        .unwrap()
+                        .split('-')
+                        .collect();
                     if parts.len() >= 3 {
                         let project_id = parts[0];
-                        let env_file_path = parts[1..parts.len()-1].join("-");
-                        let group_id = parts[parts.len()-1];
-                        
+                        let env_file_path = parts[1..parts.len() - 1].join("-");
+                        let group_id = parts[parts.len() - 1];
+
                         // 发送事件到前端
-                        let _ = app.emit("tray-apply-config", serde_json::json!({
-                            "project_id": project_id,
-                            "env_file_path": env_file_path,
-                            "group_id": group_id
-                        }));
+                        let _ = app.emit(
+                            "tray-apply-config",
+                            serde_json::json!({
+                                "project_id": project_id,
+                                "env_file_path": env_file_path,
+                                "group_id": group_id
+                            }),
+                        );
                     }
                 }
                 _ => {}
@@ -284,22 +309,6 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            // 创建"添加项目"菜单项
-            let add_project = MenuItemBuilder::new("添加项目")
-                .id("add_project")
-                .build(app)?;
-
-            // 非 macOS：直接放在一级菜单
-            #[cfg(not(target_os = "macos"))]
-            let menu = {
-                MenuBuilder::new(app)
-                    .item(&add_project)
-                    .build()?
-            };
-
-            // 设置菜单
-            app.set_menu(menu)?;
-
             // 监听菜单事件
             app.on_menu_event(move |app, event| {
                 match event.id().as_ref() {
@@ -335,7 +344,8 @@ pub fn run() {
             save_env_file,
             load_project_config,
             save_project_config,
-            update_tray_menu
+            update_tray_menu,
+            export_project_config
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

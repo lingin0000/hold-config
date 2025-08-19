@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Project, EnvFile, EnvVariable } from '../types';
+import { TabValue } from "@fluentui/react-components";
 
 export const useProjectManager = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string | undefined>();
-  const [selectedEnvFile, setSelectedEnvFile] = useState<string | undefined>();
+  const [selectedEnvFile, setSelectedEnvFile] = useState<
+    TabValue | undefined
+  >();
   const [isLoading, setIsLoading] = useState(false);
 
   // 从本地存储加载项目

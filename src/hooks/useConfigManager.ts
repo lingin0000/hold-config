@@ -1,23 +1,27 @@
 import { useState, useEffect } from 'react';
 import { invoke } from "@tauri-apps/api/core";
 import { EnvGroup, CategoryTemplate, Project, EnvFile } from '../types';
+import { TabValue } from "@fluentui/react-components";
 
 export const useConfigManager = (
   currentProject: Project | undefined,
   currentEnvFile: EnvFile | undefined,
-  selectedEnvFile: string | undefined,
+  selectedEnvFile: TabValue | undefined,
   saveProjectsToLocal: (projects: Project[]) => void,
   projects: Project[]
 ) => {
   // 配置组相关状态
-  const [selectedGroupsByCategory, setSelectedGroupsByCategory] = useState<Map<string, string>>(new Map());
+  const [selectedGroupsByCategory, setSelectedGroupsByCategory] = useState<
+    Map<string, string>
+  >(new Map());
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<EnvGroup | null>(null);
   const [isNewGroup, setIsNewGroup] = useState(false);
 
   // 分类模板相关状态
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<CategoryTemplate | null>(null);
+  const [editingTemplate, setEditingTemplate] =
+    useState<CategoryTemplate | null>(null);
   const [isNewTemplate, setIsNewTemplate] = useState(false);
 
   // 切换环境文件时清除选择
@@ -80,8 +84,14 @@ export const useConfigManager = (
   };
 
   // 保存配置组
-  const saveGroup = (showNotification: (type: "success" | "error" | "warning", message: string) => void) => {
-    if (!editingGroup || !currentProject || selectedEnvFile === undefined) return;
+  const saveGroup = (
+    showNotification: (
+      type: "success" | "error" | "warning",
+      message: string
+    ) => void
+  ) => {
+    if (!editingGroup || !currentProject || selectedEnvFile === undefined)
+      return;
 
     const updatedProjects = [...projects];
     const project = updatedProjects.find((p) => p.id === currentProject.id);
@@ -105,11 +115,20 @@ export const useConfigManager = (
     project.last_modified = new Date().toISOString();
     saveProjectsToLocal(updatedProjects);
     closeGroupDialog();
-    showNotification("success", isNewGroup ? "配置组添加成功" : "配置组更新成功");
+    showNotification(
+      "success",
+      isNewGroup ? "配置组添加成功" : "配置组更新成功"
+    );
   };
 
   // 删除配置组
-  const deleteGroup = (groupId: string, showNotification: (type: "success" | "error" | "warning", message: string) => void) => {
+  const deleteGroup = (
+    groupId: string,
+    showNotification: (
+      type: "success" | "error" | "warning",
+      message: string
+    ) => void
+  ) => {
     if (!currentProject || selectedEnvFile === undefined) return;
 
     if (confirm("确定要删除这个配置组吗？")) {
@@ -121,9 +140,9 @@ export const useConfigManager = (
 
       if (!project.env_files[fileIndex]) return;
 
-      project.env_files[fileIndex].groups = project.env_files[fileIndex].groups.filter(
-        (g) => g.id !== groupId
-      );
+      project.env_files[fileIndex].groups = project.env_files[
+        fileIndex
+      ].groups.filter((g) => g.id !== groupId);
       project.last_modified = new Date().toISOString();
       saveProjectsToLocal(updatedProjects);
       showNotification("success", "配置组已删除");
@@ -139,7 +158,7 @@ export const useConfigManager = (
       typeof template.id === "string" &&
       typeof template.name === "string" &&
       Array.isArray(template.keys);
-  
+
     if (isValidTemplate) {
       setEditingTemplate(template as CategoryTemplate);
       setIsNewTemplate(false);
@@ -162,8 +181,14 @@ export const useConfigManager = (
     setIsNewTemplate(false);
   };
 
-  const saveCategoryTemplate = (showNotification: (type: "success" | "error" | "warning", message: string) => void) => {
-    if (!editingTemplate || !currentProject || selectedEnvFile === undefined) return;
+  const saveCategoryTemplate = (
+    showNotification: (
+      type: "success" | "error" | "warning",
+      message: string
+    ) => void
+  ) => {
+    if (!editingTemplate || !currentProject || selectedEnvFile === undefined)
+      return;
 
     // 验证模板数据完整性
     if (!editingTemplate.name.trim() || editingTemplate.keys.length === 0) {
@@ -172,7 +197,7 @@ export const useConfigManager = (
     }
 
     // 过滤空的keys
-    const filteredKeys = editingTemplate.keys.filter(key => key.trim());
+    const filteredKeys = editingTemplate.keys.filter((key) => key.trim());
     if (filteredKeys.length === 0) {
       showNotification("warning", "请添加至少一个有效的变量Key");
       return;
@@ -180,7 +205,7 @@ export const useConfigManager = (
 
     const validTemplate = {
       ...editingTemplate,
-      keys: filteredKeys
+      keys: filteredKeys,
     };
 
     const updatedProjects = [...projects];
@@ -197,21 +222,31 @@ export const useConfigManager = (
     if (isNewTemplate) {
       project.env_files[fileIndex].categoryTemplates!.push(validTemplate);
     } else {
-      const templateIndex = project.env_files[fileIndex].categoryTemplates!.findIndex(
-        (t) => t.id === validTemplate.id
-      );
+      const templateIndex = project.env_files[
+        fileIndex
+      ].categoryTemplates!.findIndex((t) => t.id === validTemplate.id);
       if (templateIndex !== -1) {
-        project.env_files[fileIndex].categoryTemplates![templateIndex] = validTemplate;
+        project.env_files[fileIndex].categoryTemplates![templateIndex] =
+          validTemplate;
       }
     }
 
     project.last_modified = new Date().toISOString();
     saveProjectsToLocal(updatedProjects);
     closeCategoryDialog();
-    showNotification("success", isNewTemplate ? "分类模板添加成功" : "分类模板更新成功");
+    showNotification(
+      "success",
+      isNewTemplate ? "分类模板添加成功" : "分类模板更新成功"
+    );
   };
 
-  const deleteCategoryTemplate = (templateId: string, showNotification: (type: "success" | "error" | "warning", message: string) => void) => {
+  const deleteCategoryTemplate = (
+    templateId: string,
+    showNotification: (
+      type: "success" | "error" | "warning",
+      message: string
+    ) => void
+  ) => {
     if (!currentProject || selectedEnvFile === undefined) return;
 
     if (confirm("确定要删除这个分类模板吗？")) {
@@ -223,9 +258,9 @@ export const useConfigManager = (
       if (!project.env_files[fileIndex]) return;
 
       if (project.env_files[fileIndex].categoryTemplates) {
-        project.env_files[fileIndex].categoryTemplates = project.env_files[fileIndex].categoryTemplates!.filter(
-          (t) => t.id !== templateId
-        );
+        project.env_files[fileIndex].categoryTemplates = project.env_files[
+          fileIndex
+        ].categoryTemplates!.filter((t) => t.id !== templateId);
       }
 
       project.last_modified = new Date().toISOString();
@@ -236,9 +271,9 @@ export const useConfigManager = (
 
   // 分类模板编辑相关函数
   const addKeyToTemplate = (event?: any) => {
-    console.log(event,1111)
-    setEditingTemplate(prev => {
-      console.log(prev,111)
+    console.log(event, 1111);
+    setEditingTemplate((prev) => {
+      console.log(prev, 111);
       const base: CategoryTemplate = prev ?? {
         id: Date.now().toString(),
         name: "",
@@ -250,7 +285,7 @@ export const useConfigManager = (
   };
 
   const updateTemplateKey = (keyIndex: number, newKey: string) => {
-    setEditingTemplate(prev => {
+    setEditingTemplate((prev) => {
       if (!prev) return prev;
       const updatedKeys = [...prev.keys];
       updatedKeys[keyIndex] = newKey;
@@ -259,7 +294,7 @@ export const useConfigManager = (
   };
 
   const deleteTemplateKey = (keyIndex: number) => {
-    setEditingTemplate(prev => {
+    setEditingTemplate((prev) => {
       if (!prev) return prev;
       const updatedKeys = prev.keys.filter((_, index) => index !== keyIndex);
       return { ...prev, keys: updatedKeys };
@@ -308,9 +343,19 @@ export const useConfigManager = (
   // };
 
   // 保存合并后的环境变量文件
-  const saveMergedEnvFile = async (showNotification: (type: "success" | "error" | "warning", message: string) => void) => {
+  const saveMergedEnvFile = async (
+    showNotification: (
+      type: "success" | "error" | "warning",
+      message: string
+    ) => void
+  ) => {
     const selectedGroupIds = getSelectedGroupIds();
-    if (!currentProject || selectedEnvFile === undefined || selectedGroupIds.length === 0) return;
+    if (
+      !currentProject ||
+      selectedEnvFile === undefined ||
+      selectedGroupIds.length === 0
+    )
+      return;
 
     try {
       const fileIndex = parseInt(selectedEnvFile?.toString() || "0");
@@ -322,11 +367,11 @@ export const useConfigManager = (
         projectPath: currentProject.path,
       });
       const latestEnv =
-        scannedEnvFiles.find(f => f.path === envFile.path) ||
-        scannedEnvFiles.find(f => f.name === envFile.name);
+        scannedEnvFiles.find((f) => f.path === envFile.path) ||
+        scannedEnvFiles.find((f) => f.name === envFile.name);
 
       const currentContent = latestEnv?.content || "";
-      const currentLines = currentContent.split('\n');
+      const currentLines = currentContent.split("\n");
 
       // 1) 选中的配置组
       const selectedGroups = envFile.groups.filter((group) =>
@@ -347,19 +392,23 @@ export const useConfigManager = (
       const existingKeys = new Set<string>();
       currentLines.forEach((line) => {
         const trimmed = line.trim();
-        if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
-          const [k] = trimmed.split('=');
-          const cleanKey = (k || '').trim();
+        if (trimmed && !trimmed.startsWith("#") && trimmed.includes("=")) {
+          const [k] = trimmed.split("=");
+          const cleanKey = (k || "").trim();
           if (cleanKey) existingKeys.add(cleanKey);
         }
       });
 
       // 4) 替换现有 key 的值
-      const updatedLines = currentLines.map(line => {
+      const updatedLines = currentLines.map((line) => {
         const trimmedLine = line.trim();
-        if (trimmedLine && !trimmedLine.startsWith('#') && trimmedLine.includes('=')) {
-          const [key] = trimmedLine.split('=');
-          const cleanKey = (key || '').trim();
+        if (
+          trimmedLine &&
+          !trimmedLine.startsWith("#") &&
+          trimmedLine.includes("=")
+        ) {
+          const [key] = trimmedLine.split("=");
+          const cleanKey = (key || "").trim();
           if (cleanKey && variablesToUpdate.has(cleanKey)) {
             return `${cleanKey}=${variablesToUpdate.get(cleanKey)}`;
           }
@@ -370,19 +419,25 @@ export const useConfigManager = (
       // 5) 追加文件中不存在的 key（按配置组分段）
       const appendSections: string[] = [];
       selectedGroups.forEach((group) => {
-        const missingVars = group.variables.filter(v => v.key && !existingKeys.has(v.key.trim()));
+        const missingVars = group.variables.filter(
+          (v) => v.key && !existingKeys.has(v.key.trim())
+        );
         if (missingVars.length > 0) {
-          appendSections.push('');
+          appendSections.push("");
           appendSections.push(`# ${group.name}`);
           if (group.description) appendSections.push(`# ${group.description}`);
-          missingVars.forEach(v => {
-            appendSections.push(`${v.key!.trim()}=${v.value ?? ''}`);
+          missingVars.forEach((v) => {
+            appendSections.push(`${v.key!.trim()}=${v.value ?? ""}`);
             if (v.key) existingKeys.add(v.key.trim());
           });
         }
       });
 
-      const updatedContent = (updatedLines.join('\n') + (appendSections.length ? '\n' + appendSections.join('\n') : '')).trimEnd() + '\n';
+      const updatedContent =
+        (
+          updatedLines.join("\n") +
+          (appendSections.length ? "\n" + appendSections.join("\n") : "")
+        ).trimEnd() + "\n";
 
       await invoke("save_env_file", {
         filePath: envFile.path,
@@ -391,7 +446,9 @@ export const useConfigManager = (
 
       // 同步本地项目信息（更新时间）
       const updatedProjects = [...projects];
-      const projectToUpdate = updatedProjects.find((p) => p.id === currentProject.id);
+      const projectToUpdate = updatedProjects.find(
+        (p) => p.id === currentProject.id
+      );
       if (projectToUpdate) {
         projectToUpdate.last_modified = new Date().toISOString();
         saveProjectsToLocal(updatedProjects);
@@ -408,15 +465,15 @@ export const useConfigManager = (
   // 通过组 ID 直接选择配置组（用于托盘菜单）
   const selectGroupById = (groupId: string) => {
     if (!currentEnvFile) return false;
-  
-    const group = currentEnvFile.groups.find(g => g.id === groupId);
+
+    const group = currentEnvFile.groups.find((g) => g.id === groupId);
     if (!group) return false;
-  
+
     const category = group.category || "未分类";
     setSelectedGroupsByCategory(new Map([[category, groupId]]));
     return true;
   };
-  
+
   return {
     // 配置组相关
     selectedGroupsByCategory,
