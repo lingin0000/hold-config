@@ -1,5 +1,11 @@
 name: Build and Release Windows App
 
+# 配置工作流权限
+permissions:
+  contents: write  # 允许创建 Release 和上传文件
+  actions: read    # 允许读取 Actions
+  checks: read     # 允许读取检查状态
+
 on:
   push:
     tags:
@@ -62,7 +68,7 @@ jobs:
           
           ### 🔧 安装说明
           1. 下载 `.exe` 文件
-          2. 右键选择"以管理员身份运行"
+          2. 右键选择\"以管理员身份运行\"
           3. 按照安装向导完成安装
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
