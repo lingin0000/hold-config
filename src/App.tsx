@@ -1,8 +1,5 @@
 import { useEffect } from "react";
-import {
-  FluentProvider,
-  Toaster,
-} from "@fluentui/react-components";
+import { FluentProvider, Toaster } from "@fluentui/react-components";
 import { listen } from "@tauri-apps/api/event";
 import { ProjectSidebar } from "./components/ProjectSidebar";
 import { ConfigGroupDialog } from "./components/ConfigGroupDialog";
@@ -16,7 +13,7 @@ import { useTheme } from "./contexts/ThemeContext";
 
 function App() {
   const styles = useAppStyle();
-    const { currentTheme } = useTheme();
+  const { currentTheme } = useTheme();
 
   // 使用自定义hooks
   const projectManager = useProjectManager();
@@ -99,6 +96,7 @@ function App() {
             onAddProject={() =>
               projectManager.selectProjectFolder(showNotification)
             }
+            onImportProjectConfig={importProjectConfig}
           />
 
           {/* 工作区 */}
@@ -134,7 +132,6 @@ function App() {
             }
             setEditingGroup={configManager.setEditingGroup}
             onExportProjectConfig={exportProjectConfig}
-            onImportProjectConfig={importProjectConfig}
             onModifyProjectPath={modifyProjectPath}
           />
         </div>

@@ -1508,7 +1508,7 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "hold-config"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "chrono",
  "serde",
@@ -1516,6 +1516,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
+ "tauri-plugin-fs",
  "tauri-plugin-opener",
  "tauri-plugin-updater",
  "tokio",

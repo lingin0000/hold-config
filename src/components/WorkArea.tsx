@@ -111,7 +111,6 @@ interface WorkAreaProps {
   setEditingGroup: (group: any) => void;
   // 项目操作函数
   onExportProjectConfig: () => void;
-  onImportProjectConfig: () => void;
   onModifyProjectPath: () => void;
 }
 
@@ -137,7 +136,6 @@ export const WorkArea: React.FC<WorkAreaProps> = ({
   saveMergedEnvFile,
   setEditingGroup,
   onExportProjectConfig,
-  onImportProjectConfig,
   onModifyProjectPath,
 }) => {
   const styles = useStyles();
@@ -235,14 +233,7 @@ export const WorkArea: React.FC<WorkAreaProps> = ({
             icon={<ArrowExport20Regular />}
             onClick={onExportProjectConfig}
           >
-            导出配置
-          </Button>
-          <Button
-            appearance="subtle"
-            icon={<ArrowImport20Regular />}
-            onClick={onImportProjectConfig}
-          >
-            导入配置
+            导出项目
           </Button>
           <Button
             appearance="subtle"

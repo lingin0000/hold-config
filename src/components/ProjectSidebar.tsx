@@ -12,6 +12,7 @@ import {
   Add24Regular,
   FolderOpen24Regular,
   DarkTheme24Filled,
+  ArrowImport20Regular,
 } from "@fluentui/react-icons";
 import { Project } from "../types";
 import { ThemeToggle } from "./ThemeToggle";
@@ -85,6 +86,9 @@ const useStyles = makeStyles({
 
     "&:hover": {
       backgroundColor: tokens.colorNeutralBackground1Hover,
+      "& .project-actions": {
+        opacity: 1,
+      },
     },
 
     '&[data-selected="true"]': {
@@ -137,10 +141,6 @@ const useStyles = makeStyles({
     gap: "2px",
     opacity: 0,
     transition: "opacity 0.15s ease-in-out",
-
-    "$projectItem:hover &": {
-      opacity: 1,
-    },
   },
 
   actionButton: {
@@ -207,6 +207,7 @@ interface ProjectSidebarProps {
   onProjectDelete: (projectId: string) => void;
   onProjectRefresh: (projectId: string) => void;
   onAddProject?: () => void;
+  onImportProjectConfig?: () => void;
 }
 
 export const ProjectSidebar = ({
@@ -214,8 +215,8 @@ export const ProjectSidebar = ({
   selectedProject,
   onProjectSelect,
   onProjectDelete,
-  onProjectRefresh,
   onAddProject,
+  onImportProjectConfig,
 }: ProjectSidebarProps) => {
   const styles = useStyles();
 
@@ -244,36 +245,18 @@ export const ProjectSidebar = ({
               data-selected={selectedProject === project.id}
               onClick={() => onProjectSelect(project.id)}
             >
-              <Folder24Regular className={styles.projectIcon} />
-
-              <div className={styles.projectContent}>
-                <Text className={styles.projectName}>{project.name}</Text>
-              </div>
-
-              <div className={styles.projectActions}>
-                <Button
-                  appearance="subtle"
-                  icon={<ArrowSync24Regular />}
-                  size="small"
-                  className={styles.actionButton}
-                  title="刷新项目"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onProjectRefresh(project.id);
-                  }}
-                />
-                <Button
-                  appearance="subtle"
-                  icon={<Delete24Regular />}
-                  size="small"
-                  className={styles.actionButton}
-                  title="移除项目"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onProjectDelete(project.id);
-                  }}
-                />
-              </div>
+              <Text className={styles.projectName}>{project.name}</Text>
+              <Button
+                appearance="subtle"
+                icon={<Delete24Regular />}
+                size="small"
+                className={styles.actionButton}
+                title="移除项目"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onProjectDelete(project.id);
+                }}
+              />
             </div>
           ))
         )}
@@ -285,8 +268,14 @@ export const ProjectSidebar = ({
       <div className={styles.sidebarFooter}>
         <Button
           appearance="primary"
+          icon={<ArrowImport20Regular />}
+          onClick={onImportProjectConfig}
+        >
+          导入项目
+        </Button>
+        <Button
+          appearance="primary"
           icon={<Add24Regular />}
-          className={styles.addProjectButton}
           onClick={onAddProject}
         >
           添加项目

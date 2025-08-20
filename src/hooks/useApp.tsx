@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useProjectManager } from "./useProjectManager";
 import { useConfigManager } from "./useConfigManager";
 import { open } from "@tauri-apps/plugin-dialog";
+import { readTextFile } from "@tauri-apps/plugin-fs";
 import { Toast, ToastBody, ToastIntent, ToastTitle, useToastController } from "@fluentui/react-components";
 
 export const useApp = ({
@@ -121,9 +122,11 @@ export const useApp = ({
           },
         ],
       });
-
+      
       if (result) {
-        const importedData = JSON.parse(result as string);
+        // result 是文件路径，需要读取文件内容
+        const fileContent = await readTextFile(result as string);
+        const importedData = JSON.parse(fileContent);
         const importedProject = importedData.project;
 
         // 生成新的项目ID避免冲突
