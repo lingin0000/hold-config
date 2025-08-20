@@ -7,8 +7,6 @@ import {
 } from "@fluentui/react-components";
 import {
   Delete24Regular,
-  Folder24Regular,
-  ArrowSync24Regular,
   Add24Regular,
   FolderOpen24Regular,
   DarkTheme24Filled,

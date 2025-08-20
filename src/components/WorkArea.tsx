@@ -11,7 +11,6 @@ import {
   Warning20Regular,
   Add20Regular,
   ArrowExport20Regular,
-  ArrowImport20Regular,
   FolderArrowUp20Regular,
 } from "@fluentui/react-icons";
 import { EnvFileTabs } from "./EnvFileTabs";
