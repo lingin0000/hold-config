@@ -194,7 +194,9 @@ fn build_tray_menu(
             continue;
         }
 
-        let mut project_submenu_builder = SubmenuBuilder::new(app, &project.name);
+        // 一级菜单：项目名称前添加 📁 图标
+        let project_title = format!("📁 {}", project.name);
+        let mut project_submenu_builder = SubmenuBuilder::new(app, &project_title);
 
         // 为每个环境文件创建子菜单，但只对有分类的文件创建子菜单
         for env_file in &project.env_files {
@@ -204,13 +206,17 @@ fn build_tray_menu(
 
             // 为每个分类创建子菜单（二级菜单）
             for category in &env_file.categories {
-                let mut category_submenu_builder = SubmenuBuilder::new(app, &category.name);
+                // 二级菜单：分类名称前添加 📂 图标
+                let category_title = format!("📂 {}", category.name);
+                let mut category_submenu_builder = SubmenuBuilder::new(app, &category_title);
 
                 // 为每个配置组创建菜单项（三级菜单）
                 for group in &category.groups {
                     let menu_id =
                         format!("tray-config-{}-{}-{}", project.id, env_file.path, group.id);
-                    let menu_item = MenuItemBuilder::new(&group.name).id(&menu_id).build(app)?;
+                    // 三级菜单：配置组名称前添加 ⚙️ 图标
+                    let group_title = format!("⚙️ {}", group.name);
+                    let menu_item = MenuItemBuilder::new(&group_title).id(&menu_id).build(app)?;
                     category_submenu_builder = category_submenu_builder.item(&menu_item);
                 }
 
