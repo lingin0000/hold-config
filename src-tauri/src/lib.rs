@@ -207,7 +207,7 @@ fn build_tray_menu(
             // 为每个分类创建子菜单（二级菜单）
             for category in &env_file.categories {
                 // 二级菜单：分类名称前添加 📂 图标
-                let category_title = format!("📂 {}", category.name);
+                let category_title = format!("🐘 {}", category.name);
                 let mut category_submenu_builder = SubmenuBuilder::new(app, &category_title);
 
                 // 为每个配置组创建菜单项（三级菜单）
