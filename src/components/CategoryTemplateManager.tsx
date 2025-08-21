@@ -97,44 +97,33 @@ export const CategoryTemplateManager = ({
   return (
     <div className={styles.templateManager}>
       {/* 标题和添加按钮 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: tokens.spacingVerticalS,
-          padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
-        }}
-      >
-        <div>
-          <Text size={400} weight="semibold">
-            分类模板管理
-          </Text>
-          <Text
-            size={300}
-            style={{
-              color: tokens.colorNeutralForeground2,
-              marginLeft: tokens.spacingHorizontalS,
-            }}
-          >
-            {categoryTemplates.length} 个分类模板
-          </Text>
-        </div>
-        <Button
-          appearance="primary"
-          icon={<Add20Regular />}
-          onClick={onAddTemplate}
-        >
-          添加分类模板
-        </Button>
-      </div>
-      
+
       <Accordion collapsible defaultOpenItems={"templates-section"}>
         <AccordionItem value="templates-section">
           <AccordionHeader className={styles.accordionHeader}>
-            <Text size={300} weight="medium">
-              模板列表
-            </Text>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                width: "100%",
+                justifyContent: "space-between",
+                marginBottom: tokens.spacingVerticalS,
+                padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+              }}
+            >
+              <div>
+                <Text size={400} weight="semibold">
+                  分类模板管理
+                </Text>
+              </div>
+              <Button
+                appearance="primary"
+                icon={<Add20Regular />}
+                onClick={onAddTemplate}
+              >
+                添加分类模板
+              </Button>
+            </div>
           </AccordionHeader>
 
           <AccordionPanel>

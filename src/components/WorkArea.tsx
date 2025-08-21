@@ -96,7 +96,7 @@ interface WorkAreaProps {
   onSetSelectedEnvFile: (envFileIndex: TabValue) => void;
   // 配置管理相关函数
   getCategoryTemplates: () => any[];
-  onOpenCategoryDialog: () => void;
+  onOpenCategoryDialog: (template?: any) => void;
   onDeleteCategoryTemplate: (templateId: string) => void;
   onOpenGroupDialog: () => void;
   getGroupsByCategory: (groups: any[]) => Map<string, any[]>;

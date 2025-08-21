@@ -113,7 +113,7 @@ function App() {
             }
             onSetSelectedEnvFile={projectManager.setSelectedEnvFile}
             getCategoryTemplates={configManager.getCategoryTemplates}
-            onOpenCategoryDialog={() => configManager.openCategoryDialog()}
+            onOpenCategoryDialog={(template) => configManager.openCategoryDialog(template)}
             onDeleteCategoryTemplate={(templateId) =>
               configManager.deleteCategoryTemplate(templateId, showNotification)
             }
