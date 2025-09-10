@@ -1,5 +1,11 @@
 import { useEffect } from "react";
-import { FluentProvider, Toaster } from "@fluentui/react-components";
+
+import {
+  ConfigProvider,
+  ResizeGroup,
+  ResizeHandler,
+  ResizeItem,
+} from "@douyinfe/semi-ui"; // 引入 Semi 的全局配置 Provider，用于主题切换
 import { listen } from "@tauri-apps/api/event";
 import { ProjectSidebar } from "./components/ProjectSidebar";
 import { ConfigGroupDialog } from "./components/ConfigGroupDialog";
@@ -7,14 +13,11 @@ import { CategoryTemplateDialog } from "./components/CategoryTemplateDialog";
 import { useProjectManager } from "./hooks/useProjectManager";
 import { useConfigManager } from "./hooks/useConfigManager";
 import { WorkArea } from "./components/WorkArea";
-import { useAppStyle } from "./hooks/useAppStyle";
+
 import { useApp } from "./hooks/useApp";
-import { useTheme } from "./contexts/ThemeContext";
+import { CategoryTemplate } from "./types";
 
 function App() {
-  const styles = useAppStyle();
-  const { currentTheme } = useTheme();
-
   // 使用自定义hooks
   const projectManager = useProjectManager();
   const configManager = useConfigManager(
@@ -73,77 +76,89 @@ function App() {
   }, [projectManager.projects]);
 
   return (
-    <FluentProvider
-      theme={currentTheme}
-      style={{
-        height: "100%",
-        width: "100%",
-      }}
-    >
-      <Toaster />
-      <div className={styles.container}>
-        {/* 主内容区 */}
-        <div className={styles.mainContent}>
-          {/* 项目侧边栏 */}
-          <ProjectSidebar
-            projects={projectManager.projects}
-            selectedProject={projectManager.selectedProject}
-            onProjectSelect={projectManager.handleProjectSelect}
-            onProjectDelete={projectManager.deleteProject}
-            onProjectRefresh={(projectId) =>
-              projectManager.refreshProject(projectId, showNotification)
-            }
-            onAddProject={() =>
-              projectManager.selectProjectFolder(showNotification)
-            }
-            onImportProjectConfig={importProjectConfig}
-          />
+    <ConfigProvider>
+      <div style={{ width: "100%", height: "100%" }}>
+        <ResizeGroup direction="horizontal">
+          <ResizeItem
+            style={{
+              backgroundColor: "rgba(var(--semi-grey-1), 1)",
+              border: "var(--semi-color-border) 1px solid",
+            }}
+            defaultSize="20%"
+            min="10%"
+          >
+            <ProjectSidebar
+              projects={projectManager.projects}
+              selectedProject={projectManager.selectedProject}
+              onProjectSelect={projectManager.handleProjectSelect}
+              onProjectRefresh={(projectId) =>
+                projectManager.refreshProject(projectId, showNotification)
+              }
+              onAddProject={() =>
+                projectManager.selectProjectFolder(showNotification)
+              }
+              onImportProjectConfig={importProjectConfig}
+            />
+          </ResizeItem>
+          <ResizeHandler />
+          <ResizeItem
+            style={{
+              backgroundColor: "rgba(var(--semi-grey-1), 1)",
+              border: "var(--semi-color-border) 1px solid",
+            }}
+            defaultSize="80%"
+            min="40%"
+          >
+            <WorkArea
+              currentProject={projectManager.currentProject}
+              selectedEnvFile={projectManager.selectedEnvFile}
+              currentEnvFile={projectManager.currentEnvFile}
+              isLoading={projectManager.isLoading}
+              onSelectProjectFolder={() =>
+                projectManager.selectProjectFolder(showNotification)
+              }
+              onRefreshProject={(projectId) =>
+                projectManager.refreshProject(projectId, showNotification)
+              }
+              onSetSelectedEnvFile={projectManager.setSelectedEnvFile}
+              getCategoryTemplates={configManager.getCategoryTemplates}
+              onOpenCategoryDialog={(template) =>
+                configManager.openCategoryDialog(template)
+              }
+              onDeleteCategoryTemplate={(templateId) =>
+                configManager.deleteCategoryTemplate(templateId)
+              }
+              onCopyTemplate={(template) =>
+                configManager.copyTemplate(template)
+              }
+              onOpenGroupDialog={() => configManager.openGroupDialog()}
+              getGroupsByCategory={configManager.getGroupsByCategory}
+              isGroupSelected={configManager.isGroupSelected}
+              handleGroupSelect={configManager.handleGroupSelect}
+              onEditGroup={configManager.openGroupDialog}
+              onDeleteGroup={(groupId) =>
+                configManager.deleteGroup(groupId, showNotification)
+              }
+              getSelectedGroupIds={configManager.getSelectedGroupIds}
+              clearSelection={configManager.clearSelection}
+              saveMergedEnvFile={() =>
+                configManager.saveMergedEnvFile(showNotification)
+              }
+              setEditingGroup={configManager.setEditingGroup}
+              onExportProjectConfig={exportProjectConfig}
+              onModifyProjectPath={modifyProjectPath}
+              onProjectDelete={projectManager.deleteProject}
+            />
+          </ResizeItem>
+        </ResizeGroup>
 
-          {/* 工作区 */}
-          <WorkArea
-            currentProject={projectManager.currentProject}
-            selectedEnvFile={projectManager.selectedEnvFile}
-            currentEnvFile={projectManager.currentEnvFile}
-            isLoading={projectManager.isLoading}
-            onSelectProjectFolder={() =>
-              projectManager.selectProjectFolder(showNotification)
-            }
-            onRefreshProject={(projectId) =>
-              projectManager.refreshProject(projectId, showNotification)
-            }
-            onSetSelectedEnvFile={projectManager.setSelectedEnvFile}
-            getCategoryTemplates={configManager.getCategoryTemplates}
-            onOpenCategoryDialog={(template) => configManager.openCategoryDialog(template)}
-            onDeleteCategoryTemplate={(templateId) =>
-              configManager.deleteCategoryTemplate(templateId, showNotification)
-            }
-            onOpenGroupDialog={() => configManager.openGroupDialog()}
-            getGroupsByCategory={configManager.getGroupsByCategory}
-            isGroupSelected={configManager.isGroupSelected}
-            handleGroupSelect={configManager.handleGroupSelect}
-            onEditGroup={configManager.openGroupDialog}
-            onDeleteGroup={(groupId) =>
-              configManager.deleteGroup(groupId, showNotification)
-            }
-            getSelectedGroupIds={configManager.getSelectedGroupIds}
-            clearSelection={configManager.clearSelection}
-            saveMergedEnvFile={() =>
-              configManager.saveMergedEnvFile(showNotification)
-            }
-            setEditingGroup={configManager.setEditingGroup}
-            onExportProjectConfig={exportProjectConfig}
-            onModifyProjectPath={modifyProjectPath}
-          />
-        </div>
-
-        {/* 配置组编辑对话框 */}
         <ConfigGroupDialog
           isOpen={configManager.isGroupDialogOpen}
           isNewGroup={configManager.isNewGroup}
           editingGroup={configManager.editingGroup}
           categoryTemplates={configManager.getCategoryTemplates()}
           onClose={configManager.closeGroupDialog}
-          onSave={() => configManager.saveGroup(showNotification)}
+          onSave={(group) => configManager.saveGroup(group)}
           onGroupChange={configManager.setEditingGroup}
         />
 
@@ -153,14 +168,12 @@ function App() {
           isNewTemplate={configManager.isNewTemplate}
           editingTemplate={configManager.editingTemplate}
           onClose={configManager.closeCategoryDialog}
-          onSave={() => configManager.saveCategoryTemplate(showNotification)}
-          onTemplateChange={configManager.setEditingTemplate}
-          onAddKey={configManager.addKeyToTemplate}
-          onUpdateKey={configManager.updateTemplateKey}
-          onDeleteKey={configManager.deleteTemplateKey}
+          onSave={(data: CategoryTemplate) =>
+            configManager.saveCategoryTemplate(data)
+          }
         />
       </div>
-    </FluentProvider>
+    </ConfigProvider>
   );
 }
 

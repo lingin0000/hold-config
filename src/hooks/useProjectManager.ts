@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react';
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import { Project, EnvFile, EnvVariable } from '../types';
-import { TabValue } from "@fluentui/react-components";
+import { Project, EnvFile, EnvVariable } from "../types";
 
 export const useProjectManager = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<string | undefined>();
-  const [selectedEnvFile, setSelectedEnvFile] = useState<
-    TabValue | undefined
-  >();
+  const [selectedEnvFile, setSelectedEnvFile] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
 
   // 从本地存储加载项目
@@ -28,7 +25,7 @@ export const useProjectManager = () => {
         if (parsedProjects.length > 0) {
           setSelectedProject(parsedProjects[0].id);
           if (parsedProjects[0].env_files.length > 0) {
-            setSelectedEnvFile("0");
+            setSelectedEnvFile(parsedProjects[0].env_files[0].name);
           }
         }
       }
@@ -67,7 +64,12 @@ export const useProjectManager = () => {
   };
 
   // 选择项目文件夹
-  const selectProjectFolder = async (showNotification: (type: "success" | "error" | "warning", message: string) => void) => {
+  const selectProjectFolder = async (
+    showNotification: (
+      type: "success" | "error" | "warning",
+      message: string
+    ) => void
+  ) => {
     try {
       setIsLoading(true);
       const selected = await open({
@@ -166,7 +168,7 @@ export const useProjectManager = () => {
     setSelectedProject(projectId);
     const project = projects.find((p) => p.id === projectId);
     if (project && project.env_files.length > 0) {
-      setSelectedEnvFile("0");
+      setSelectedEnvFile(project.env_files[0].name);
     } else {
       setSelectedEnvFile(undefined);
     }
@@ -176,7 +178,6 @@ export const useProjectManager = () => {
   const deleteProject = (projectId: string) => {
     const updatedProjects = projects.filter((p) => p.id !== projectId);
     saveProjectsToLocal(updatedProjects);
-    
     if (selectedProject === projectId) {
       if (updatedProjects.length > 0) {
         handleProjectSelect(updatedProjects[0].id);
@@ -188,7 +189,13 @@ export const useProjectManager = () => {
   };
 
   // 刷新项目
-  const refreshProject = async (projectId: string, showNotification: (type: "success" | "error" | "warning", message: string) => void) => {
+  const refreshProject = async (
+    projectId: string,
+    showNotification: (
+      type: "success" | "error" | "warning",
+      message: string
+    ) => void
+  ) => {
     const project = projects.find((p) => p.id === projectId);
     if (!project) return;
 
@@ -230,7 +237,9 @@ export const useProjectManager = () => {
 
   // 获取当前项目和环境文件
   const currentProject = projects.find((p) => p.id === selectedProject);
-  const currentEnvFile = currentProject?.env_files[parseInt(selectedEnvFile?.toString() || "0")];
+  const currentEnvFile = currentProject?.env_files.find(
+    (f) => f.name === selectedEnvFile
+  );
 
   return {
     projects,

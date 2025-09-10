@@ -3,33 +3,30 @@ import { useProjectManager } from "./useProjectManager";
 import { useConfigManager } from "./useConfigManager";
 import { open } from "@tauri-apps/plugin-dialog";
 import { readTextFile } from "@tauri-apps/plugin-fs";
-import { Toast, ToastBody, ToastIntent, ToastTitle, useToastController } from "@fluentui/react-components";
+import { Toast } from "@douyinfe/semi-ui";
 
 export const useApp = ({
   projectManager,
   configManager,
 }: {
-  projectManager:  ReturnType<typeof useProjectManager>;
+  projectManager: ReturnType<typeof useProjectManager>;
   configManager: ReturnType<typeof useConfigManager>;
 }) => {
-    const { dispatchToast } = useToastController();
-  // 修改通知函数使用 Toast
+  // 使用 Semi UI 的全局 Toast API 实现通知
   const showNotification = (
     type: "success" | "error" | "warning",
     message: string
   ) => {
-    const intent: ToastIntent =
-      type === "error" ? "error" : type === "warning" ? "warning" : "success";
-
-    dispatchToast(
-      <Toast>
-        <ToastTitle>
-          {type === "success" ? "成功" : type === "error" ? "错误" : "警告"}
-        </ToastTitle>
-        <ToastBody>{message}</ToastBody>
-      </Toast>,
-      { intent, timeout: 3000 }
-    );
+    // 根据类型调用不同的 Toast 方法，统一展示时长 3s
+    if (type === "success") {
+      Toast.success({ content: message, duration: 3 });
+      return;
+    }
+    if (type === "error") {
+      Toast.error({ content: message, duration: 3 });
+      return;
+    }
+    Toast.warning({ content: message, duration: 3 });
   };
 
   // 处理托盘配置应用
@@ -122,7 +119,7 @@ export const useApp = ({
           },
         ],
       });
-      
+
       if (result) {
         // result 是文件路径，需要读取文件内容
         const fileContent = await readTextFile(result as string);
@@ -131,7 +128,7 @@ export const useApp = ({
 
         // 生成新的项目ID避免冲突
         importedProject.id = Date.now().toString();
-        importedProject.name = `${importedProject.name} (导入)`;
+        importedProject.name = importedProject.name;
 
         // 添加到项目列表
         const updatedProjects = [...projectManager.projects, importedProject];
@@ -172,12 +169,6 @@ export const useApp = ({
         });
 
         projectManager.saveProjectsToLocal(updatedProjects);
-
-        // 重新扫描项目
-        await projectManager.refreshProject(
-          projectManager.currentProject.id,
-          showNotification
-        );
 
         showNotification("success", "项目路径修改成功");
       }
@@ -235,6 +226,6 @@ export const useApp = ({
     exportProjectConfig,
     importProjectConfig,
     modifyProjectPath,
-    showNotification
+    showNotification,
   };
 };

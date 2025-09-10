@@ -7,7 +7,7 @@ export interface EnvVariable {
 
 // 分类模板类型定义 - 新增
 export interface CategoryTemplate {
-  id: string;
+  id?: string;
   name: string; // 分类名称
   description?: string;
   keys: string[]; // 该分类下的变量key列表
@@ -15,7 +15,7 @@ export interface CategoryTemplate {
 
 // 环境变量组类型定义
 export interface EnvGroup {
-  id: string;
+  id?: string;
   name: string;
   description?: string;
   category?: string;

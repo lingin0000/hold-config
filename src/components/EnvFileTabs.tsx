@@ -1,44 +1,43 @@
-import { Tab, TabList, TabValue, makeStyles, tokens } from '@fluentui/react-components';
-import { EnvFile } from '../types';
-
-const useStyles = makeStyles({
-  envFilesTabs: {
-    marginBottom: tokens.spacingVerticalM,
-    overflow: 'auto',
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    paddingBottom: tokens.spacingVerticalS,
-  },
-  tabList: {
-    minWidth: 'max-content',
-  }
-});
+import { IconFile } from "@douyinfe/semi-icons";
+import { EnvFile } from "../types";
+import { TabPane, Tabs } from "@douyinfe/semi-ui";
 
 interface EnvFileTabsProps {
   envFiles: EnvFile[];
-  selectedEnvFile?: TabValue;
-  onEnvFileSelect: (value: TabValue) => void;
+  selectedEnvFile?: string;
+  onEnvFileSelect: (value: string) => void;
 }
 
-export const EnvFileTabs = ({ 
-  envFiles, 
-  selectedEnvFile, 
-  onEnvFileSelect 
+export const EnvFileTabs = ({
+  envFiles,
+  selectedEnvFile,
+  onEnvFileSelect,
 }: EnvFileTabsProps) => {
-  const styles = useStyles();
-
   return (
-    <div className={styles.envFilesTabs}>
-      <TabList 
-        className={styles.tabList}
-        selectedValue={selectedEnvFile} 
-        onTabSelect={(_, data) => onEnvFileSelect(data.value)}
+    <div
+      style={{
+        borderBottom: `1px solid #ccc`,
+        padding: 8,
+        position: "sticky",
+        top: 0,
+        backgroundColor: "var(--semi-color-bg-1)",
+      }}
+    >
+      <Tabs
+        type="button"
+        onChange={(activeKey) => onEnvFileSelect(activeKey)}
+        activeKey={selectedEnvFile}
+        style={{ padding: 0 }}
       >
-        {envFiles.map((file, index) => (
-          <Tab key={index} value={index.toString()}>
-            📄 {file.name}
-          </Tab>
+        {envFiles.map((file) => (
+          <TabPane
+            tab={file.name}
+            key={file.name}
+            itemKey={file.name}
+            icon={<IconFile />}
+          />
         ))}
-      </TabList>
+      </Tabs>
     </div>
   );
 };

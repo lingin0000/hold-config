@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { EnvGroup, CategoryTemplate, Project, EnvFile } from '../types';
-import { TabValue } from "@fluentui/react-components";
+import { EnvGroup, CategoryTemplate, Project, EnvFile } from "../types";
+import { Toast } from "@douyinfe/semi-ui";
 
 export const useConfigManager = (
   currentProject: Project | undefined,
   currentEnvFile: EnvFile | undefined,
-  selectedEnvFile: TabValue | undefined,
+  selectedEnvFile: string | undefined,
   saveProjectsToLocal: (projects: Project[]) => void,
   projects: Project[]
 ) => {
@@ -84,12 +84,7 @@ export const useConfigManager = (
   };
 
   // 保存配置组
-  const saveGroup = (
-    showNotification: (
-      type: "success" | "error" | "warning",
-      message: string
-    ) => void
-  ) => {
+  const saveGroup = (data: EnvGroup) => {
     if (!editingGroup || !currentProject || selectedEnvFile === undefined)
       return;
 
@@ -97,28 +92,28 @@ export const useConfigManager = (
     const project = updatedProjects.find((p) => p.id === currentProject.id);
     if (!project) return;
 
-    const fileIndex = parseInt(selectedEnvFile?.toString() || "0");
+    const env_files = project.env_files.find(
+      (f) => f.name === currentEnvFile?.name
+    );
 
-    if (!project.env_files[fileIndex]) return;
+    if (!env_files) {
+      Toast.error("环境文件不存在");
+      return;
+    }
 
     if (isNewGroup) {
-      project.env_files[fileIndex].groups.push(editingGroup);
+      env_files.groups.push(data);
     } else {
-      const groupIndex = project.env_files[fileIndex].groups.findIndex(
-        (g) => g.id === editingGroup.id
-      );
+      const groupIndex = env_files.groups.findIndex((g) => g.id === data.id);
       if (groupIndex !== -1) {
-        project.env_files[fileIndex].groups[groupIndex] = editingGroup;
+        env_files.groups[groupIndex] = data;
       }
     }
 
     project.last_modified = new Date().toISOString();
     saveProjectsToLocal(updatedProjects);
     closeGroupDialog();
-    showNotification(
-      "success",
-      isNewGroup ? "配置组添加成功" : "配置组更新成功"
-    );
+    Toast.success(isNewGroup ? "配置组添加成功" : "配置组更新成功");
   };
 
   // 删除配置组
@@ -181,124 +176,86 @@ export const useConfigManager = (
     setIsNewTemplate(false);
   };
 
-  const saveCategoryTemplate = (
-    showNotification: (
-      type: "success" | "error" | "warning",
-      message: string
-    ) => void
-  ) => {
-    if (!editingTemplate || !currentProject || selectedEnvFile === undefined)
-      return;
-
+  const saveCategoryTemplate = (data: CategoryTemplate) => {
+    if (!data || !currentProject || selectedEnvFile === undefined) return;
     // 验证模板数据完整性
-    if (!editingTemplate.name.trim() || editingTemplate.keys.length === 0) {
-      showNotification("warning", "请填写分类名称并添加至少一个变量Key");
+    if (!data.name.trim() || data.keys.length === 0) {
+      Toast.warning("请填写分类名称并添加至少一个变量Key");
       return;
     }
-
-    // 过滤空的keys
-    const filteredKeys = editingTemplate.keys.filter((key) => key.trim());
-    if (filteredKeys.length === 0) {
-      showNotification("warning", "请添加至少一个有效的变量Key");
-      return;
-    }
-
-    const validTemplate = {
-      ...editingTemplate,
-      keys: filteredKeys,
-    };
 
     const updatedProjects = [...projects];
     const project = updatedProjects.find((p) => p.id === currentProject.id);
     if (!project) return;
 
-    const fileIndex = parseInt(selectedEnvFile?.toString() || "0");
-    if (!project.env_files[fileIndex]) return;
+    const targetEnvFile = project.env_files.find(
+      (item) => item.name === selectedEnvFile
+    );
+    if (!targetEnvFile) {
+      Toast.error("未找到目标环境文件");
+      return;
+    }
 
-    if (!project.env_files[fileIndex].categoryTemplates) {
-      project.env_files[fileIndex].categoryTemplates = [];
+    if (!targetEnvFile.categoryTemplates) {
+      targetEnvFile.categoryTemplates = [];
     }
 
     if (isNewTemplate) {
-      project.env_files[fileIndex].categoryTemplates!.push(validTemplate);
+      targetEnvFile.categoryTemplates!.push(data);
     } else {
-      const templateIndex = project.env_files[
-        fileIndex
-      ].categoryTemplates!.findIndex((t) => t.id === validTemplate.id);
+      const templateIndex = targetEnvFile.categoryTemplates!.findIndex(
+        (t) => t.id === data.id
+      );
       if (templateIndex !== -1) {
-        project.env_files[fileIndex].categoryTemplates![templateIndex] =
-          validTemplate;
+        targetEnvFile.categoryTemplates![templateIndex] = data;
       }
     }
 
     project.last_modified = new Date().toISOString();
     saveProjectsToLocal(updatedProjects);
     closeCategoryDialog();
-    showNotification(
-      "success",
-      isNewTemplate ? "分类模板添加成功" : "分类模板更新成功"
-    );
+    Toast.success(isNewTemplate ? "分类模板添加成功" : "分类模板更新成功");
   };
 
-  const deleteCategoryTemplate = (
-    templateId: string,
-    showNotification: (
-      type: "success" | "error" | "warning",
-      message: string
-    ) => void
-  ) => {
+  const deleteCategoryTemplate = (templateId: string) => {
+    if (!currentProject || selectedEnvFile === undefined) return;
+    const updatedProjects = [...projects];
+    const project = updatedProjects.find((p) => p.id === currentProject.id);
+    if (!project) return;
+
+    const targetEnvFile = project.env_files.find(
+      (item) => item.name === selectedEnvFile
+    );
+    if (!targetEnvFile) {
+      Toast.error("未找到目标环境文件");
+      return;
+    }
+    if (!targetEnvFile.categoryTemplates) return;
+
+    if (targetEnvFile.categoryTemplates) {
+      targetEnvFile.categoryTemplates = targetEnvFile.categoryTemplates.filter(
+        (t) => t.id !== templateId
+      );
+    }
+    project.last_modified = new Date().toISOString();
+    saveProjectsToLocal(updatedProjects);
+    Toast.success("分类模板已删除");
+  };
+
+  // 复制分类模板
+  const copyTemplate = (template: CategoryTemplate) => {
     if (!currentProject || selectedEnvFile === undefined) return;
 
-    if (confirm("确定要删除这个分类模板吗？")) {
-      const updatedProjects = [...projects];
-      const project = updatedProjects.find((p) => p.id === currentProject.id);
-      if (!project) return;
+    // 创建复制的模板，生成新的ID和名称
+    const copiedTemplate: CategoryTemplate = {
+      name: `${template.name} - 副本`,
+      keys: [...template.keys], // 深拷贝keys数组
+      description: template.description,
+    };
+    setIsNewTemplate(true);
 
-      const fileIndex = parseInt(selectedEnvFile?.toString() || "0");
-      if (!project.env_files[fileIndex]) return;
-
-      if (project.env_files[fileIndex].categoryTemplates) {
-        project.env_files[fileIndex].categoryTemplates = project.env_files[
-          fileIndex
-        ].categoryTemplates!.filter((t) => t.id !== templateId);
-      }
-
-      project.last_modified = new Date().toISOString();
-      saveProjectsToLocal(updatedProjects);
-      showNotification("success", "分类模板已删除");
-    }
-  };
-
-  // 分类模板编辑相关函数
-  const addKeyToTemplate = (event?: any) => {
-    console.log(event, 1111);
-    setEditingTemplate((prev) => {
-      console.log(prev, 111);
-      const base: CategoryTemplate = prev ?? {
-        id: Date.now().toString(),
-        name: "",
-        description: "",
-        keys: [],
-      };
-      return { ...base, keys: [...base.keys, ""] };
-    });
-  };
-
-  const updateTemplateKey = (keyIndex: number, newKey: string) => {
-    setEditingTemplate((prev) => {
-      if (!prev) return prev;
-      const updatedKeys = [...prev.keys];
-      updatedKeys[keyIndex] = newKey;
-      return { ...prev, keys: updatedKeys };
-    });
-  };
-
-  const deleteTemplateKey = (keyIndex: number) => {
-    setEditingTemplate((prev) => {
-      if (!prev) return prev;
-      const updatedKeys = prev.keys.filter((_, index) => index !== keyIndex);
-      return { ...prev, keys: updatedKeys };
-    });
+    setEditingTemplate(copiedTemplate);
+    setIsCategoryDialogOpen(true);
   };
 
   // 获取分类模板列表
@@ -309,9 +266,10 @@ export const useConfigManager = (
 
   // 按分类组织配置组
   const getGroupsByCategory = (groups: EnvGroup[]) => {
+    console.log(groups);
     const categorizedGroups = new Map<string, EnvGroup[]>();
-    groups.forEach((group) => {
-      const category = group.category || "未分类";
+    groups.filter(Boolean).forEach((group) => {
+      const category = group?.category || "未分类";
       if (!categorizedGroups.has(category)) {
         categorizedGroups.set(category, []);
       }
@@ -374,8 +332,8 @@ export const useConfigManager = (
       const currentLines = currentContent.split("\n");
 
       // 1) 选中的配置组
-      const selectedGroups = envFile.groups.filter((group) =>
-        selectedGroupIds.includes(group.id)
+      const selectedGroups = envFile.groups.filter(
+        (group) => group.id && selectedGroupIds.includes(group.id)
       );
 
       // 2) 准备更新表：key -> value
@@ -497,10 +455,8 @@ export const useConfigManager = (
     closeCategoryDialog,
     saveCategoryTemplate,
     deleteCategoryTemplate,
+    copyTemplate,
     setEditingTemplate,
-    addKeyToTemplate,
-    updateTemplateKey,
-    deleteTemplateKey,
     getCategoryTemplates,
 
     // 其他功能

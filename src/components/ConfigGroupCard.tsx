@@ -1,68 +1,15 @@
-import {
-  Card,
-  Text,
-  Button,
-  makeStyles,
-  tokens,
-} from "@fluentui/react-components";
-import { Edit20Regular, Delete20Regular } from "@fluentui/react-icons";
 import { EnvGroup } from "../types";
+import { Card, Button, Typography, Tag } from "@douyinfe/semi-ui";
+import {
+  IconCopyAdd,
+  IconDelete,
+  IconEdit,
+  IconChevronDown,
+  IconChevronUp,
+} from "@douyinfe/semi-icons";
+import { useState } from "react";
 
-const useStyles = makeStyles({
-  groupCard: {
-    transition: "all 0.2s ease",
-    minHeight: "80px", // 进一步减小最小高度
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
-    cursor: "pointer",
-    position: "relative",
-    "&:hover": {
-      backgroundColor: tokens.colorNeutralBackground2,
-      boxShadow: tokens.shadow4, // 减小阴影
-      "& .group-actions": {
-        opacity: 1,
-      },
-    },
-    '&[data-selected="true"]': {
-      backgroundColor: tokens.colorBrandBackground2,
-    },
-  },
-  groupCardHeader: {
-    padding: `${tokens.spacingVerticalXS} ${tokens.spacingVerticalS}`, // 进一步减小间距
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    display: "flex",
-    alignItems: "flex-start",
-    gap: tokens.spacingHorizontalXS, // 减小间距
-  },
-  groupCardContent: {
-    padding: `${tokens.spacingVerticalXS} ${tokens.spacingVerticalS}`, // 进一步减小间距
-    flex: 1,
-  },
-  groupActions: {
-    display: "flex",
-    gap: "2px", // 进一步减小间距
-    opacity: 0,
-    transition: "opacity 0.2s ease",
-    marginLeft: "auto",
-  },
-  groupCheckbox: {
-    flexShrink: 0,
-  },
-  groupInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
-  variableItem: {
-    fontSize: "10px", // 进一步减小字体
-    color: tokens.colorNeutralForeground3,
-    marginBottom: "1px", // 进一步减小间距
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    padding: "1px 3px", // 进一步减小内边距
-    backgroundColor: tokens.colorNeutralBackground3,
-    borderRadius: "2px",
-  },
-});
+const { Text, Title } = Typography;
 
 interface ConfigGroupCardProps {
   group: EnvGroup;
@@ -79,7 +26,8 @@ export const ConfigGroupCard = ({
   onDelete,
   onSelect,
 }: ConfigGroupCardProps) => {
-  const styles = useStyles();
+  // 变量预览展开/收起状态
+  const [isVariablesExpanded, setIsVariablesExpanded] = useState(false);
 
   const handleCardClick = (e: React.MouseEvent) => {
     // 如果点击的是按钮，不触发卡片选择
@@ -87,104 +35,218 @@ export const ConfigGroupCard = ({
     if (target.closest("button")) {
       return;
     }
-    onSelect(group.id, !selected);
+    if (group.id) {
+      onSelect(group.id, !selected);
+    }
+  };
+
+  const cardStyle = {
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    border: selected
+      ? "1px solid var(--semi-color-primary)"
+      : "1px solid var(--semi-color-border)",
+    boxShadow: selected
+      ? "0 4px 12px rgba(var(--semi-color-primary-rgb), 0.15)"
+      : "0 2px 8px rgba(0, 0, 0, 0.06)",
+    transform: selected ? "translateY(-1px)" : "none",
+  };
+
+  const headerStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: "12px",
+  };
+
+  const titleStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    flex: 1,
+  };
+
+  const actionsStyle = {
+    display: "flex",
+    gap: "4px",
+    opacity: 0.7,
+    transition: "opacity 0.2s ease",
+  };
+
+  const variablesStyle = {
+    backgroundColor: "var(--semi-color-fill-0)",
+    borderRadius: "6px",
+    padding: "8px",
+    marginTop: "8px",
+  };
+
+  const variableItemStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "2px 0",
+    fontSize: "12px",
   };
 
   return (
-    <Card
-      className={styles.groupCard}
-      data-selected={selected}
-      onClick={handleCardClick}
-    >
-      <div className={styles.groupCardHeader}>
-        <Text
-          size={300}
-          weight="semibold"
-          style={{
-            // 减小字体
-            display: "block",
-            marginBottom: tokens.spacingVerticalXS,
-            color: tokens.colorBrandForeground1,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {group.name}
-        </Text>
+    <Card style={cardStyle} bodyStyle={{ padding: "16px" }}>
+      <div
+        onClick={handleCardClick}
+        onMouseEnter={(e) => {
+          const actions = e.currentTarget.querySelector(
+            ".card-actions"
+          ) as HTMLElement;
+          if (actions) actions.style.opacity = "1";
+        }}
+        onMouseLeave={(e) => {
+          const actions = e.currentTarget.querySelector(
+            ".card-actions"
+          ) as HTMLElement;
+          if (actions) actions.style.opacity = "0.7";
+        }}
+      >
+        {/* 卡片头部 */}
+        <div style={headerStyle}>
+          <div style={titleStyle}>
+            <Title heading={6} style={{ margin: 0, fontWeight: 600 }}>
+              {group.name}
+            </Title>
+            {group.category && (
+              <Tag size="small" color="blue">
+                {group.category}
+              </Tag>
+            )}
+          </div>
 
-        <div className={styles.groupInfo}>
-          {group.description && (
-            <Text
-              size={200}
+          <div className="card-actions" style={actionsStyle}>
+            <Button
+              icon={<IconEdit />}
+              size="small"
+              theme="borderless"
+              title="编辑配置组"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(group);
+              }}
+            />
+            <Button
+              icon={<IconCopyAdd />}
+              size="small"
+              theme="borderless"
+              title="复制配置组"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit({
+                  ...group,
+                  id: undefined,
+                });
+              }}
+            />
+            <Button
+              icon={<IconDelete />}
+              size="small"
+              theme="borderless"
+              type="danger"
+              title="删除配置组"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (group.id) {
+                  onDelete(group.id);
+                }
+              }}
+            />
+          </div>
+        </div>
+
+        {/* 描述信息 */}
+        {group.description && (
+          <Text
+            type="secondary"
+            size="small"
+            style={{
+              display: "block",
+              marginBottom: "8px",
+              lineHeight: "1.4",
+            }}
+          >
+            {group.description}
+          </Text>
+        )}
+
+        {/* 变量预览 */}
+        {group.variables.length > 0 && (
+          <div style={variablesStyle}>
+            <div
               style={{
-                color: tokens.colorNeutralForeground2,
-                display: "block",
-                lineHeight: "1.1", // 进一步减小行高
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "6px",
+                cursor: "pointer",
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsVariablesExpanded(!isVariablesExpanded);
               }}
             >
-              {group.description}
-            </Text>
-          )}
-        </div>
+              <Text
+                size="small"
+                type="secondary"
+                style={{
+                  fontWeight: 500,
+                }}
+              >
+                变量预览 ({group.variables.length}个)
+              </Text>
+              <Button
+                icon={
+                  isVariablesExpanded ? <IconChevronUp /> : <IconChevronDown />
+                }
+                size="small"
+                theme="borderless"
+                style={{ padding: "2px" }}
+              />
+            </div>
 
-        <div className={`group-actions ${styles.groupActions}`}>
-          <Button
-            appearance="subtle"
-            icon={<Edit20Regular />}
-            size="small"
-            title="编辑配置组"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(group);
-            }}
-          />
-          <Button
-            appearance="subtle"
-            icon={<Delete20Regular />}
-            size="small"
-            title="删除配置组"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(group.id);
-            }}
-          />
-        </div>
-      </div>
+            {isVariablesExpanded && (
+              <>
+                {group.variables.map((variable, index) => (
+                  <div key={index} style={variableItemStyle}>
+                    <Text
+                      code
+                      size="small"
+                      style={{
+                        backgroundColor:
+                          "var(--semi-color-primary-light-hover)",
+                        padding: "1px 4px",
+                        borderRadius: "3px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {variable.key}
+                    </Text>
+                    <Text size="small" type="secondary">
+                      {variable.value || "(空值)"}
+                    </Text>
+                  </div>
+                ))}
+              </>
+            )}
 
-      <div className={styles.groupCardContent}>
-        <div style={{ maxHeight: "40px", overflow: "hidden" }}>
-          {" "}
-          {/* 进一步减小最大高度 */}
-          {group.variables.slice(0, 2).map(
-            (
-              variable,
-              index // 只显示2个变量
-            ) => (
-              <div key={index} className={styles.variableItem}>
-                <strong style={{ color: tokens.colorNeutralForeground2 }}>
-                  {variable.key}
-                </strong>
-                : {variable.value}
-              </div>
-            )
-          )}
-          {group.variables.length > 2 && (
-            <Text
-              size={100}
-              style={{
-                color: tokens.colorNeutralForeground3,
-                fontStyle: "italic",
-                marginTop: "1px", // 减小间距
-              }}
-            >
-              +{group.variables.length - 2}个
-            </Text>
-          )}
-        </div>
+            {!isVariablesExpanded && group.variables.length > 0 && (
+              <Text
+                size="small"
+                type="tertiary"
+                style={{
+                  fontStyle: "italic",
+                  display: "block",
+                }}
+              >
+                点击展开查看所有变量
+              </Text>
+            )}
+          </div>
+        )}
       </div>
     </Card>
   );

@@ -1,89 +1,26 @@
+import { CategoryTemplate } from "../types";
 import {
   Button,
-  Text,
+  Typography,
   Card,
-  Badge,
-  makeStyles,
-  tokens,
-  Accordion,
-  AccordionItem,
-  AccordionHeader,
-  AccordionPanel,
-} from "@fluentui/react-components";
+  Collapse,
+  Empty,
+  Popconfirm,
+} from "@douyinfe/semi-ui";
+import { IconDelete, IconEdit, IconPlus, IconCopy } from "@douyinfe/semi-icons";
 import {
-  Add20Regular,
-  Edit20Regular,
-  Delete20Regular,
-} from "@fluentui/react-icons";
-import { CategoryTemplate } from "../types";
+  IllustrationNoContent,
+  IllustrationNoContentDark,
+} from "@douyinfe/semi-illustrations";
 
-const useStyles = makeStyles({
-  templateManager: {
-    marginBottom: tokens.spacingVerticalL,
-  },
-  // 可选：更紧凑的 Header 包裹样式
-  accordionHeader: {
-    padding: "0",
-  },
-  templateGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-    gap: "4px",
-    marginTop: "4px",
-  },
-  templateCard: {
-    transition: "all 0.2s ease",
-    border: `1px solid ${tokens.colorNeutralStroke2}`,
-    cursor: "pointer",
-    position: "relative",
-    "&:hover": {
-      backgroundColor: tokens.colorNeutralBackground2,
-      transform: "none",
-      boxShadow: "none",
-      "& .template-actions": {
-        opacity: 1,
-      },
-    },
-  },
-  templateCardHeader: {
-    padding: "4px 6px",
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: tokens.spacingHorizontalXS,
-  },
-  templateCardContent: {
-    padding: "4px 6px",
-  },
-  templateActions: {
-    display: "flex",
-    gap: "2px",
-    opacity: 0,
-    transition: "opacity 0.2s ease",
-  },
-  keyList: {
-    maxHeight: "80px",
-    overflow: "auto",
-  },
-  keyItem: {
-    fontSize: "9px",
-    color: tokens.colorNeutralForeground3,
-    marginBottom: "1px",
-    padding: "1px 3px",
-    backgroundColor: tokens.colorNeutralBackground3,
-    borderRadius: "2px",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-  },
-});
+const { Text } = Typography;
 
 interface CategoryTemplateManagerProps {
   categoryTemplates: CategoryTemplate[];
   onAddTemplate: () => void;
   onEditTemplate: (template: CategoryTemplate) => void;
   onDeleteTemplate: (templateId: string) => void;
+  onCopyTemplate: (template: CategoryTemplate) => void; // 新增复制功能
 }
 
 export const CategoryTemplateManager = ({
@@ -91,150 +28,123 @@ export const CategoryTemplateManager = ({
   onAddTemplate,
   onEditTemplate,
   onDeleteTemplate,
+  onCopyTemplate,
 }: CategoryTemplateManagerProps) => {
-  const styles = useStyles();
-
   return (
-    <div className={styles.templateManager}>
-      {/* 标题和添加按钮 */}
-
-      <Accordion collapsible defaultOpenItems={"templates-section"}>
-        <AccordionItem value="templates-section">
-          <AccordionHeader className={styles.accordionHeader}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                width: "100%",
-                justifyContent: "space-between",
-                marginBottom: tokens.spacingVerticalS,
-                padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+    <Collapse collapsible defaultOpenItems={"templates-section"}>
+      <Collapse.Panel
+        itemKey="templates-section"
+        header={
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              width: "100%",
+              gap: 50,
+            }}
+          >
+            <Text>分类模板管理</Text>
+            <Button
+              icon={<IconPlus />}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddTemplate();
               }}
             >
-              <div>
-                <Text size={400} weight="semibold">
-                  分类模板管理
-                </Text>
-              </div>
-              <Button
-                appearance="primary"
-                icon={<Add20Regular />}
-                onClick={onAddTemplate}
-              >
-                添加分类模板
-              </Button>
-            </div>
-          </AccordionHeader>
-
-          <AccordionPanel>
-            {categoryTemplates.length === 0 ? (
+              新增模板
+            </Button>
+          </div>
+        }
+      >
+        {categoryTemplates.length === 0 ? (
+          <Empty
+            image={
+              <IllustrationNoContent style={{ width: 150, height: 150 }} />
+            }
+            darkModeImage={
+              <IllustrationNoContentDark style={{ width: 150, height: 150 }} />
+            }
+            title="暂无分类模板"
+            description="开始创建你的第一个分类模板吧！"
+          />
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+              gap: "4px",
+              marginTop: "4px",
+            }}
+          >
+            {categoryTemplates.map((template) => (
               <Card
-                style={{
-                  padding: tokens.spacingVerticalL,
-                  textAlign: "center",
-                }}
+                key={template.id}
+                headerExtraContent={
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 4,
+                    }}
+                  >
+                    <Button
+                      icon={<IconEdit />}
+                      size="small"
+                      title="编辑分类模板"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditTemplate(template);
+                      }}
+                    />
+                    <Button
+                      icon={<IconCopy />}
+                      size="small"
+                      title="复制分类模板"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCopyTemplate(template);
+                      }}
+                    />
+                    <Popconfirm
+                      title="确定是否要保存此修改？"
+                      content="此修改将不可逆"
+                      onConfirm={() => {
+                        if (template.id) onDeleteTemplate(template.id);
+                      }}
+                    >
+                      <Button
+                        icon={<IconDelete />}
+                        size="small"
+                        title="删除分类模板"
+                      />
+                    </Popconfirm>
+                  </div>
+                }
+                title={
+                  <>
+                    {template.name} ({template.keys.length}个变量)
+                  </>
+                }
               >
-                <Text
-                  size={300}
-                  style={{ color: tokens.colorNeutralForeground3 }}
+                <div
+                  style={{
+                    height: "150px",
+                    overflow: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 12,
+                  }}
                 >
-                  暂无分类模板，请先添加分类模板
-                </Text>
+                  {template.keys.map((key) => (
+                    <Text key={key} code>
+                      {key}
+                    </Text>
+                  ))}
+                </div>
               </Card>
-            ) : (
-              <div className={styles.templateGrid}>
-                {categoryTemplates.map((template) => (
-                  <Card key={template.id} className={styles.templateCard}>
-                    <div className={styles.templateCardHeader}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <Text
-                          size={200}
-                          weight="semibold"
-                          style={{
-                            display: "block",
-                            marginBottom: "1px",
-                            color: tokens.colorBrandForeground1,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          {template.name}
-                        </Text>
-                        {template.description && (
-                          <Text
-                            size={200}
-                            style={{
-                              color: tokens.colorNeutralForeground2,
-                              display: "block",
-                              lineHeight: "1.1",
-                            }}
-                          >
-                            {template.description}
-                          </Text>
-                        )}
-                      </div>
-
-                      <div
-                        className={`template-actions ${styles.templateActions}`}
-                      >
-                        <Button
-                          appearance="subtle"
-                          icon={<Edit20Regular />}
-                          size="small"
-                          title="编辑分类模板"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEditTemplate(template);
-                          }}
-                        />
-                        <Button
-                          appearance="subtle"
-                          icon={<Delete20Regular />}
-                          size="small"
-                          title="删除分类模板"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteTemplate(template.id);
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className={styles.templateCardContent}>
-                      <Badge
-                        appearance="outline"
-                        style={{ marginBottom: "4px" }}
-                      >
-                        {template.keys.length} 个变量Key
-                      </Badge>
-                      <div className={styles.keyList}>
-                        {template.keys.slice(0, 2).map((key, index) => (
-                          <div key={index} className={styles.keyItem}>
-                            {key}
-                          </div>
-                        ))}
-                        {template.keys.length > 2 && (
-                          <Text
-                            size={200}
-                            style={{
-                              color: tokens.colorNeutralForeground3,
-                              fontStyle: "italic",
-                              marginTop: "2px",
-                            }}
-                          >
-                            ...还有 {template.keys.length - 2} 个Key
-                          </Text>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </AccordionPanel>
-        </AccordionItem>
-      </Accordion>
-    </div>
+            ))}
+          </div>
+        )}
+      </Collapse.Panel>
+    </Collapse>
   );
 };
