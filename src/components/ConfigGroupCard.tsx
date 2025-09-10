@@ -1,5 +1,5 @@
 import { EnvGroup } from "../types";
-import { Card, Button, Typography, Tag } from "@douyinfe/semi-ui";
+import { Card, Button, Typography, Tag, Popconfirm } from "@douyinfe/semi-ui";
 import {
   IconCopyAdd,
   IconDelete,
@@ -90,21 +90,7 @@ export const ConfigGroupCard = ({
 
   return (
     <Card style={cardStyle} bodyStyle={{ padding: "16px" }}>
-      <div
-        onClick={handleCardClick}
-        onMouseEnter={(e) => {
-          const actions = e.currentTarget.querySelector(
-            ".card-actions"
-          ) as HTMLElement;
-          if (actions) actions.style.opacity = "1";
-        }}
-        onMouseLeave={(e) => {
-          const actions = e.currentTarget.querySelector(
-            ".card-actions"
-          ) as HTMLElement;
-          if (actions) actions.style.opacity = "0.7";
-        }}
-      >
+      <div onClick={handleCardClick}>
         {/* 卡片头部 */}
         <div style={headerStyle}>
           <div style={titleStyle}>
@@ -142,19 +128,22 @@ export const ConfigGroupCard = ({
                 });
               }}
             />
-            <Button
-              icon={<IconDelete />}
-              size="small"
-              theme="borderless"
-              type="danger"
-              title="删除配置组"
-              onClick={(e) => {
-                e.stopPropagation();
+            <Popconfirm
+              title="确认删除吗？"
+              onConfirm={() => {
                 if (group.id) {
                   onDelete(group.id);
                 }
               }}
-            />
+            >
+              <Button
+                icon={<IconDelete />}
+                size="small"
+                theme="borderless"
+                type="danger"
+                title="删除配置组"
+              />
+            </Popconfirm>
           </div>
         </div>
 

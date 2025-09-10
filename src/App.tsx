@@ -34,7 +34,6 @@ function App() {
     exportProjectConfig,
     importProjectConfig,
     modifyProjectPath,
-    showNotification,
   } = useApp({
     projectManager,
     configManager,
@@ -42,15 +41,12 @@ function App() {
 
   useEffect(() => {
     const unlistenMenuAddProject = listen("menu-add-project", () => {
-      projectManager.selectProjectFolder(showNotification);
+      projectManager.selectProjectFolder();
     });
 
     const unlistenMenuRefreshProject = listen("menu-refresh-project", () => {
       if (projectManager.selectedProject) {
-        projectManager.refreshProject(
-          projectManager.selectedProject,
-          showNotification
-        );
+        projectManager.refreshProject(projectManager.selectedProject);
       }
     });
 
@@ -92,11 +88,9 @@ function App() {
               selectedProject={projectManager.selectedProject}
               onProjectSelect={projectManager.handleProjectSelect}
               onProjectRefresh={(projectId) =>
-                projectManager.refreshProject(projectId, showNotification)
+                projectManager.refreshProject(projectId)
               }
-              onAddProject={() =>
-                projectManager.selectProjectFolder(showNotification)
-              }
+              onAddProject={() => projectManager.selectProjectFolder()}
               onImportProjectConfig={importProjectConfig}
             />
           </ResizeItem>
@@ -114,11 +108,9 @@ function App() {
               selectedEnvFile={projectManager.selectedEnvFile}
               currentEnvFile={projectManager.currentEnvFile}
               isLoading={projectManager.isLoading}
-              onSelectProjectFolder={() =>
-                projectManager.selectProjectFolder(showNotification)
-              }
+              onSelectProjectFolder={() => projectManager.selectProjectFolder()}
               onRefreshProject={(projectId) =>
-                projectManager.refreshProject(projectId, showNotification)
+                projectManager.refreshProject(projectId)
               }
               onSetSelectedEnvFile={projectManager.setSelectedEnvFile}
               getCategoryTemplates={configManager.getCategoryTemplates}
@@ -136,14 +128,10 @@ function App() {
               isGroupSelected={configManager.isGroupSelected}
               handleGroupSelect={configManager.handleGroupSelect}
               onEditGroup={configManager.openGroupDialog}
-              onDeleteGroup={(groupId) =>
-                configManager.deleteGroup(groupId, showNotification)
-              }
+              onDeleteGroup={(groupId) => configManager.deleteGroup(groupId)}
               getSelectedGroupIds={configManager.getSelectedGroupIds}
               clearSelection={configManager.clearSelection}
-              saveMergedEnvFile={() =>
-                configManager.saveMergedEnvFile(showNotification)
-              }
+              saveMergedEnvFile={configManager.saveMergedEnvFile}
               setEditingGroup={configManager.setEditingGroup}
               onExportProjectConfig={exportProjectConfig}
               onModifyProjectPath={modifyProjectPath}

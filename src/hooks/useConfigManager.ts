@@ -117,31 +117,26 @@ export const useConfigManager = (
   };
 
   // 删除配置组
-  const deleteGroup = (
-    groupId: string,
-    showNotification: (
-      type: "success" | "error" | "warning",
-      message: string
-    ) => void
-  ) => {
+  const deleteGroup = (groupId: string) => {
     if (!currentProject || selectedEnvFile === undefined) return;
 
-    if (confirm("确定要删除这个配置组吗？")) {
-      const updatedProjects = [...projects];
-      const project = updatedProjects.find((p) => p.id === currentProject.id);
-      if (!project) return;
+    const updatedProjects = [...projects];
+    const project = updatedProjects.find((p) => p.id === currentProject.id);
+    if (!project) return;
 
-      const fileIndex = parseInt(selectedEnvFile?.toString() || "0");
+    const env_files = project.env_files.find(
+      (f) => f.name === currentEnvFile?.name
+    );
 
-      if (!project.env_files[fileIndex]) return;
-
-      project.env_files[fileIndex].groups = project.env_files[
-        fileIndex
-      ].groups.filter((g) => g.id !== groupId);
-      project.last_modified = new Date().toISOString();
-      saveProjectsToLocal(updatedProjects);
-      showNotification("success", "配置组已删除");
+    if (!env_files) {
+      Toast.error("环境文件不存在");
+      return;
     }
+
+    env_files.groups = env_files.groups.filter((g) => g.id !== groupId);
+    project.last_modified = new Date().toISOString();
+    saveProjectsToLocal(updatedProjects);
+    Toast.success("配置组已删除");
   };
 
   // 分类模板管理
@@ -301,12 +296,7 @@ export const useConfigManager = (
   // };
 
   // 保存合并后的环境变量文件
-  const saveMergedEnvFile = async (
-    showNotification: (
-      type: "success" | "error" | "warning",
-      message: string
-    ) => void
-  ) => {
+  const saveMergedEnvFile = async () => {
     const selectedGroupIds = getSelectedGroupIds();
     if (
       !currentProject ||
@@ -413,10 +403,10 @@ export const useConfigManager = (
       }
 
       clearSelection();
-      showNotification("success", "配置已保存！");
+      Toast.success("配置已保存！");
     } catch (error) {
       console.error("保存配置失败:", error);
-      showNotification("error", "保存失败：" + error);
+      Toast.error("保存失败：" + error);
     }
   };
 

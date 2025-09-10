@@ -35,6 +35,13 @@ export const ConfigGroupDialog = ({
           options: [],
         }))
       );
+      setVariables(
+        template.keys.map((key) => ({
+          key,
+          value: "",
+          options: [],
+        }))
+      );
     }
   };
 
@@ -54,7 +61,7 @@ export const ConfigGroupDialog = ({
       }, 0);
     }
   }, [editingGroup, isOpen]);
-  
+
   return (
     <Modal
       visible={isOpen}
@@ -99,7 +106,11 @@ export const ConfigGroupDialog = ({
           placeholder="输入配置组名称"
           rules={[{ required: true, message: "请输入配置组名称" }]}
         />
-        <Form.Input label="ID" field="id" disabled />
+        {
+          <div hidden>
+            <Form.Input label="ID" field="id" disabled />
+          </div>
+        }
 
         <Form.Input
           label="配置组描述"
@@ -109,7 +120,7 @@ export const ConfigGroupDialog = ({
         />
 
         <Divider />
-        {variables.length && (
+        {variables.length ? (
           <ArrayField field="variables" initValue={variables}>
             {({ arrayFields }) => {
               return (
@@ -156,7 +167,7 @@ export const ConfigGroupDialog = ({
               );
             }}
           </ArrayField>
-        )}
+        ) : null}
       </Form>
     </Modal>
   );

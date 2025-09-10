@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Project, EnvFile, EnvVariable } from "../types";
+import { Toast } from "@douyinfe/semi-ui";
 
 export const useProjectManager = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -64,12 +65,7 @@ export const useProjectManager = () => {
   };
 
   // 选择项目文件夹
-  const selectProjectFolder = async (
-    showNotification: (
-      type: "success" | "error" | "warning",
-      message: string
-    ) => void
-  ) => {
+  const selectProjectFolder = async () => {
     try {
       setIsLoading(true);
       const selected = await open({
@@ -87,7 +83,7 @@ export const useProjectManager = () => {
         const existingProject = projects.find((p) => p.path === projectPath);
         if (existingProject) {
           handleProjectSelect(existingProject.id);
-          showNotification("warning", "项目已存在");
+          Toast.warning("项目已存在");
           return;
         }
 
@@ -123,7 +119,7 @@ export const useProjectManager = () => {
           const updatedProjects = [...projects, newProject];
           saveProjectsToLocal(updatedProjects);
           handleProjectSelect(newProject.id);
-          showNotification("success", "项目添加成功");
+          Toast.success("项目添加成功");
         } catch (invokeError) {
           console.error("扫描环境文件失败:", invokeError);
           // 如果后端命令失败，创建一个空项目
@@ -152,12 +148,12 @@ export const useProjectManager = () => {
           const updatedProjects = [...projects, newProject];
           saveProjectsToLocal(updatedProjects);
           handleProjectSelect(newProject.id);
-          showNotification("success", "项目添加成功（未找到环境文件）");
+          Toast.success("项目添加成功（未找到环境文件）");
         }
       }
     } catch (error) {
       console.error("选择项目文件夹失败:", error);
-      showNotification("error", "选择项目失败");
+      Toast.error("选择项目失败");
     } finally {
       setIsLoading(false);
     }
@@ -189,13 +185,7 @@ export const useProjectManager = () => {
   };
 
   // 刷新项目
-  const refreshProject = async (
-    projectId: string,
-    showNotification: (
-      type: "success" | "error" | "warning",
-      message: string
-    ) => void
-  ) => {
+  const refreshProject = async (projectId: string) => {
     const project = projects.find((p) => p.id === projectId);
     if (!project) return;
 
@@ -228,10 +218,10 @@ export const useProjectManager = () => {
       );
 
       saveProjectsToLocal(updatedProjects);
-      showNotification("success", "项目刷新成功");
+      Toast.success("项目刷新成功");
     } catch (error) {
       console.error("刷新项目失败:", error);
-      showNotification("error", "刷新项目失败");
+      Toast.error("刷新项目失败");
     }
   };
 
