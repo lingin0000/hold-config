@@ -88,7 +88,7 @@ export const CategoryTemplateDialog = ({
         getFormApi={(api) =>
           ((form.current as FormApi<CategoryTemplate>) = api)
         }
-        labelPosition="left"
+        labelPosition="inset"
         labelWidth={100}
       >
         {/* 表单头部继续使用 safeTemplate 作为回填默认值 */}
@@ -98,7 +98,10 @@ export const CategoryTemplateDialog = ({
           placeholder="输入分类名称"
           rules={[{ required: true, message: "请输入分类名称" }]}
         />
-        <Form.Input field="id" hidden disabled />
+        <div hidden>
+          {" "}
+          <Form.Input field="id" disabled />
+        </div>
         <Form.Input
           field="description"
           label="分类描述"

@@ -53,12 +53,13 @@ export const ConfigGroupDialog = ({
 
   useEffect(() => {
     if (editingGroup && isOpen) {
-      console.log(editingGroup);
       setTimeout(() => {
         form.current?.setValues(editingGroup);
         setVariables(editingGroup.variables);
-        console.log(form.current?.getValues());
       }, 0);
+    }
+    if (!isNewGroup) {
+      setVariables(editingGroup?.variables || []);
     }
   }, [editingGroup, isOpen]);
 
@@ -75,6 +76,7 @@ export const ConfigGroupDialog = ({
       }}
       width={900}
       centered
+      keepDOM={false}
     >
       <Form<EnvGroup>
         style={{
@@ -84,7 +86,7 @@ export const ConfigGroupDialog = ({
         }}
         /** @ts-ingore */
         getFormApi={(api) => ((form.current as FormApi<EnvGroup>) = api)}
-        labelPosition="left"
+        labelPosition="inset"
         labelWidth={120}
       >
         <Form.Select
@@ -140,7 +142,7 @@ export const ConfigGroupDialog = ({
                           label={`变量${index + 1}`}
                           field={`${field}.[key]`}
                           disabled
-                          style={{ width: 200 }}
+                          style={{ width: 300 }}
                         />
                         <Form.Input
                           label="值"

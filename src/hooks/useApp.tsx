@@ -146,6 +146,11 @@ export const useApp = ({
               ...project,
               path: selected as string,
               last_modified: new Date().toISOString(),
+              env_files:
+                projectManager.currentProject?.env_files.map((envFile) => ({
+                  ...envFile,
+                  path: (selected as string) + "/" + envFile.name,
+                })) || [],
             };
           }
           return project;

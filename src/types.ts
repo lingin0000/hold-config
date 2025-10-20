@@ -2,6 +2,7 @@
 export interface EnvVariable {
   key: string;
   value: string;
+  description?: string; // 环境变量描述
   options?: string[];
 }
 

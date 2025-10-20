@@ -108,7 +108,6 @@ export const ConfigGroupCard = ({
             <Button
               icon={<IconEdit />}
               size="small"
-              theme="borderless"
               title="编辑配置组"
               onClick={(e) => {
                 e.stopPropagation();
@@ -118,7 +117,6 @@ export const ConfigGroupCard = ({
             <Button
               icon={<IconCopyAdd />}
               size="small"
-              theme="borderless"
               title="复制配置组"
               onClick={(e) => {
                 e.stopPropagation();
@@ -139,7 +137,6 @@ export const ConfigGroupCard = ({
               <Button
                 icon={<IconDelete />}
                 size="small"
-                theme="borderless"
                 type="danger"
                 title="删除配置组"
               />
