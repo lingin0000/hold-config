@@ -6,7 +6,7 @@ use std::path::Path;
 use tauri::image::Image;
 use tauri::WebviewWindowBuilder;
 use tauri::{
-    menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
+    menu::{MenuBuilder, MenuItemBuilder},
     tray::TrayIconBuilder,
     Emitter, Manager,
 }; // 新增：用于生成时间戳
