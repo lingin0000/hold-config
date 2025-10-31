@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 use tauri::image::Image;
+use tauri::WebviewWindowBuilder;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder},
     tray::TrayIconBuilder,
@@ -181,85 +182,70 @@ fn update_tray_menu(app: tauri::AppHandle, projects: Vec<TrayProjectData>) -> Re
 }
 
 // 构建托盘菜单
-// 构建托盘菜单
 fn build_tray_menu(
     app: &tauri::AppHandle,
     projects: Vec<TrayProjectData>,
 ) -> Result<tauri::menu::Menu<tauri::Wry>, Box<dyn std::error::Error>> {
     let mut menu_builder = MenuBuilder::new(app);
 
-    // 为每个项目创建子菜单（一级菜单）
+    // 直接显示每个项目为一级菜单项，点击进入快速切换页面
     for project in projects {
-        if project.env_files.is_empty() {
-            continue;
-        }
-
-        // 一级菜单：项目名称前添加 📁 图标
         let project_title = format!("📁 {}", project.name);
-        let mut project_submenu_builder = SubmenuBuilder::new(app, &project_title);
-
-        // 为每个环境文件创建子菜单，但只对有分类的文件创建子菜单
-        for env_file in &project.env_files {
-            if env_file.categories.is_empty() {
-                continue;
-            }
-
-            // 为每个分类创建子菜单（二级菜单）
-            for category in &env_file.categories {
-                // 二级菜单：分类名称前添加 📂 图标
-                let category_title = format!("🐘 {}", category.name);
-                let mut category_submenu_builder = SubmenuBuilder::new(app, &category_title);
-
-                // 为每个配置组创建菜单项（三级菜单）
-                for group in &category.groups {
-                    let menu_id =
-                        format!("tray-config-{}-{}-{}", project.id, env_file.path, group.id);
-                    // 三级菜单：配置组名称前添加 ⚙️ 图标
-                    let group_title = format!("⚙️ {}", group.name);
-                    let menu_item = MenuItemBuilder::new(&group_title).id(&menu_id).build(app)?;
-                    category_submenu_builder = category_submenu_builder.item(&menu_item);
-                }
-
-                let category_submenu = category_submenu_builder.build()?;
-                project_submenu_builder = project_submenu_builder.item(&category_submenu);
-            }
-        }
-
-        let project_submenu = project_submenu_builder.build()?;
-        menu_builder = menu_builder.item(&project_submenu);
+        let item = MenuItemBuilder::new(&project_title)
+            .id(&format!("quick-switch-project-{}", project.id))
+            .build(app)?;
+        menu_builder = menu_builder.item(&item);
     }
 
-    // 添加分隔符和应用控制菜单
+    // 添加分隔符和退出
     menu_builder = menu_builder.separator();
-
-    // 添加应用控制项
-    let show_window = MenuItemBuilder::new("显示窗口")
-        .id("show-window")
-        .build(app)?;
     let quit_app = MenuItemBuilder::new("退出").id("quit-app").build(app)?;
-
-    menu_builder = menu_builder.item(&show_window).separator().item(&quit_app);
+    menu_builder = menu_builder.item(&quit_app);
 
     Ok(menu_builder.build()?)
+}
+
+// 创建（或显示）快速切换悬浮窗
+fn show_quick_switch_window(app: &tauri::AppHandle, project_id: Option<String>) {
+    if let Some(win) = app.get_webview_window("quick-switch") {
+        let _ = win.show();
+        let _ = win.set_focus();
+        return;
+    }
+    // 在 devUrl 环境下，加载同一个前端地址，附带查询参数 quick=1
+    let query = match project_id {
+        Some(pid) => format!("/?quick=1&project_id={}", pid),
+        None => "/?quick=1".to_string(),
+    };
+    let _ = WebviewWindowBuilder::new(
+        app,
+        "quick-switch",
+        tauri::WebviewUrl::App(query.into()),
+    )
+    .title("快速切换环境")
+    .inner_size(360.0, 480.0)
+    .always_on_top(true)
+    .resizable(false)
+    .decorations(true)
+    .build();
 }
 
 // 创建初始托盘菜单
 fn create_tray_icon(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     // 创建基本菜单项
-    let show_window = MenuItemBuilder::new("显示窗口")
-        .id("show-window")
+    let quick_switch = MenuItemBuilder::new("快速切换环境")
+        .id("quick-switch")
         .build(app)?;
     let quit_app = MenuItemBuilder::new("退出").id("quit-app").build(app)?;
 
     // 创建初始菜单
     let menu = MenuBuilder::new(app)
-        .item(&show_window)
+        .item(&quick_switch)
         .separator()
         .item(&quit_app)
         .build()?;
 
-    // 使用 PNG 图标以兼容 Image 解码（与应用 logo 保持一致）
-    // 注意：路径相对于本文件（src-tauri/src/lib.rs）
+    // 使用 PNG 图标
     let tray_icon = Image::from_bytes(include_bytes!("../icons/32x32.png"))?;
 
     // 创建托盘图标
@@ -269,11 +255,8 @@ fn create_tray_icon(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
         .tooltip("配置管理器")
         .on_menu_event(|app, event| {
             match event.id().as_ref() {
-                "show-window" => {
-                    if let Some(window) = app.get_webview_window("main") {
-                        let _ = window.show();
-                        let _ = window.set_focus();
-                    }
+                "quick-switch" => {
+                    show_quick_switch_window(app, None);
                 }
                 "quit-app" => {
                     app.exit(0);
@@ -299,6 +282,32 @@ fn create_tray_icon(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
                                 "group_id": group_id
                             }),
                         );
+                    }
+                }
+                id if id.starts_with("quick-switch-project-") => {
+                    let project_id = id.strip_prefix("quick-switch-project-").unwrap().to_string();
+                    show_quick_switch_window(app, Some(project_id));
+                }
+                _ => {}
+            }
+        })
+        .on_tray_icon_event(|app, event| {
+            // 左键打开主窗口；右键与中键由系统托盘处理（显示菜单），此处无需处理
+            match event {
+                tauri::tray::TrayIconEvent::Click { button, .. } => {
+                    if button == tauri::tray::MouseButton::Left {
+                        if let Some(win) = app.app_handle().get_webview_window("main") {
+                            let _ = win.show();
+                            let _ = win.set_focus();
+                        }
+                    } else {
+                        // 右键 / 中键：不处理，系统菜单负责显示
+                    }
+                }
+                tauri::tray::TrayIconEvent::DoubleClick { .. } => {
+                    if let Some(win) = app.app_handle().get_webview_window("main") {
+                        let _ = win.show();
+                        let _ = win.set_focus();
                     }
                 }
                 _ => {}

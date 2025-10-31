@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Project, EnvFile, EnvVariable } from "../types";
 import { Toast } from "@douyinfe/semi-ui";
+import { readTextFile } from "@tauri-apps/plugin-fs"; // 读取默认配置文件用
 
 export const useProjectManager = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -15,19 +16,74 @@ export const useProjectManager = () => {
     loadProjectsFromLocal();
   }, []);
 
-  // 加载本地保存的项目
+  // 加载本地保存的项目（新增：无缓存时加载默认配置 default.json）
   const loadProjectsFromLocal = async () => {
     try {
+      // 1) 优先读取本地缓存，避免不必要的 IO
       const savedProjects = localStorage.getItem("env-manager-projects");
       if (savedProjects) {
         const parsedProjects = JSON.parse(savedProjects);
         setProjects(parsedProjects);
-        // 如果有项目，默认选择第一个
+        // 默认选择第一个项目与其第一个环境文件
         if (parsedProjects.length > 0) {
           setSelectedProject(parsedProjects[0].id);
           if (parsedProjects[0].env_files.length > 0) {
             setSelectedEnvFile(parsedProjects[0].env_files[0].name);
           }
+        }
+        return; // 提前返回，避免继续加载默认配置
+      }
+
+      // 2) 本地无缓存时，尝试加载默认配置：default.json
+      let defaultProjects: Project[] | null = null;
+
+      // 2.1) 浏览器/Vite 预览模式：尝试通过 HTTP 读取 /default.json
+      try {
+        const res = await fetch("/default.json", { cache: "no-store" });
+        if (res.ok) {
+          defaultProjects = await res.json();
+        }
+      } catch (_) {
+        // 忽略网络错误，转入下一种读取方式
+      }
+
+      // 2.2) Tauri 桌面模式：通过文件系统读取
+      if (!defaultProjects) {
+        try {
+          const canUseTauri =
+            typeof window !== "undefined" && (window as any).__TAURI__;
+          if (canUseTauri) {
+            let jsonText = "";
+            try {
+              // 优先读取应用根目录的 default.json（打包时放置在可读位置）
+              jsonText = await readTextFile("default.json");
+            } catch (_) {
+              // 开发模式兼容：使用绝对路径读取当前工作区的 default.json
+              jsonText = await readTextFile(
+                "d\\:\\test-workspace\\hold-config\\default.json"
+              );
+            }
+            defaultProjects = JSON.parse(jsonText);
+          }
+        } catch (_) {
+          // 忽略读取错误
+        }
+      }
+
+      // 3) 若成功读取到默认配置，写入本地并初始化选择状态
+      if (
+        defaultProjects &&
+        Array.isArray(defaultProjects) &&
+        defaultProjects.length > 0
+      ) {
+        localStorage.setItem(
+          "env-manager-projects",
+          JSON.stringify(defaultProjects)
+        );
+        setProjects(defaultProjects);
+        setSelectedProject(defaultProjects[0].id);
+        if (defaultProjects[0].env_files.length > 0) {
+          setSelectedEnvFile(defaultProjects[0].env_files[0].name);
         }
       }
     } catch (error) {

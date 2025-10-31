@@ -73,6 +73,7 @@ export const EnvFileTabs = ({
           alignItems: "center",
           gap: 12,
           justifyContent: "flex-start",
+          zIndex: 99,
         }}
       >
         <ButtonGroup>

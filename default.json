@@ -1,0 +1,353 @@
+[{
+  "id": "1761904516206",
+  "name": "supre-cast-v3-BFF-nest",
+  "path": "D:\\workspace\\supre-cast-v3-BFF\\supre-cast-v3-BFF",
+  "env_files": [
+    {
+      "name": ".env",
+      "path": "D:\\workspace\\supre-cast-v3-BFF\\supre-cast-v3-BFF\\.env",
+      "content": "API_BASE_URL=http://localhost:3000\n\nDATABASE_URL= mysql://root:nacos@39.103.183.",
+      "groups": [
+        {
+          "variables": [
+            {
+              "key": "API_BASE_URL",
+              "value": "https://alpha-poseidon.supreium.com/hpdcApi/",
+              "options": []
+            },
+            {
+              "key": "DATABASE_URL",
+              "value": "mysql://poseidon_hpdcweb_alpha:+TDLJq10P8l+gBtpG@rm-8vb670i7x45c9akgzto.mysql.zhangbei.rds.aliyuncs.com:3311/poseidon_hpdcweb_alpha",
+              "options": []
+            }
+          ],
+          "category": "环境变量",
+          "name": "alpha环境",
+          "id": "1754906780642",
+          "description": ""
+        },
+        {
+          "id": "1754906869240",
+          "name": "toRelease环境",
+          "description": "",
+          "variables": [
+            {
+              "key": "API_BASE_URL",
+              "value": "https://k8s.supreium.com/k8s/172.16.141.170/hpdcApi",
+              "options": []
+            },
+            {
+              "key": "DATABASE_URL",
+              "value": "mysql://root:nacos@39.103.183.217:3306/poseidon_hpdcweb_beta_zhgc",
+              "options": []
+            }
+          ],
+          "category": "环境变量"
+        },
+        {
+          "variables": [
+            {
+              "key": "API_BASE_URL",
+              "value": "https://k8s.supreium.com/k8s/172.16.251.184/",
+              "options": []
+            },
+            {
+              "key": "DATABASE_URL",
+              "value": "mysql://poseidon_hpdcweb_alpha:+TDLJq10P8l+gBtpG@rm-8vb670i7x45c9akgzto.mysql.zhangbei.rds.aliyuncs.com:3311/poseidon_hpdcweb_alpha",
+              "options": []
+            }
+          ],
+          "category": "环境变量",
+          "name": "before-alpha环境",
+          "id": "1761296400503",
+          "description": ""
+        }
+      ],
+      "categoryTemplates": [
+        {
+          "id": "1754906764678",
+          "name": "环境变量",
+          "description": "",
+          "keys": [
+            "API_BASE_URL",
+            "DATABASE_URL"
+          ]
+        }
+      ]
+    }
+  ],
+  "created_at": "2025-08-11T02:58:11.388Z",
+  "last_modified": "2025-10-24T09:00:30.912Z"
+},{
+  "id": "1761904519038",
+  "name": "frontend-v3",
+  "path": "D:\\workspace\\frontend-v3\\frontend-v3",
+  "env_files": [
+    {
+      "name": ".env",
+      "path": "D:\\workspace\\frontend-v3\\frontend-v3\\.env",
+      "content": "# targetRequestPath=https://alpha-poseidon.supreium.com\n# targetWsPath=wss://alpha-poseidon.supreium.com\n\ntargetRequestPath=活动为契机都劝我\ntargetWsPath=wss://k8s.supreium.com/172.16.251.184/hpdcApi\nCloudServiceType=publicCloud\n",
+      "groups": [
+        {
+          "name": "alpha环境",
+          "id": "1757500149684",
+          "description": "",
+          "variables": [
+            {
+              "key": "targetRequestPath",
+              "options": [],
+              "value": "https://alpha-poseidon.supreium.com"
+            },
+            {
+              "key": "CloudServiceType",
+              "options": [],
+              "value": "wss://alpha-poseidon.supreium.com"
+            },
+            {
+              "key": "targetWsPath",
+              "options": [],
+              "value": "publicCloud"
+            }
+          ],
+          "category": "环境变量"
+        },
+        {
+          "variables": [
+            {
+              "key": "targetRequestPath",
+              "options": [],
+              "value": "https://k8s.supreium.com/k8s/172.16.251.184/"
+            },
+            {
+              "key": "CloudServiceType",
+              "options": [],
+              "value": "wss://k8s.supreium.com/k8s/172.16.251.184/"
+            },
+            {
+              "key": "targetWsPath",
+              "options": [],
+              "value": "publicCloud"
+            }
+          ],
+          "category": "环境变量",
+          "name": "before-alpha环境",
+          "id": "1757500192265",
+          "description": ""
+        },
+        {
+          "variables": [
+            {
+              "key": "targetRequestPath",
+              "options": [],
+              "value": "https://k8s.supreium.com/k8s/172.16.118.33/"
+            },
+            {
+              "key": "CloudServiceType",
+              "options": [],
+              "value": "wss://k8s.supreium.com/k8s/172.16.118.33/"
+            },
+            {
+              "key": "targetWsPath",
+              "options": [],
+              "value": "publicCloud"
+            }
+          ],
+          "category": "环境变量",
+          "name": "vip环境",
+          "description": "",
+          "id": "1758076473087"
+        }
+      ],
+      "categoryTemplates": [
+        {
+          "id": "1757500098353",
+          "name": "环境变量",
+          "description": "",
+          "keys": [
+            "targetRequestPath",
+            "CloudServiceType",
+            "targetWsPath"
+          ]
+        }
+      ]
+    }
+  ],
+  "created_at": "2025-09-10T10:28:09.046Z",
+  "last_modified": "2025-09-17T02:34:36.201Z"
+},{
+  "id": "1761904522022",
+  "name": "supre-cast-frontend-v3",
+  "path": "D:\\workspace\\supre-cast-frontend-v3\\supre-cast-frontend-v3",
+  "env_files": [
+    {
+      "name": ".env",
+      "path": "D:\\workspace\\supre-cast-frontend-v3\\supre-cast-frontend-v3\\.env",
+      "content": "",
+      "groups": [
+        {
+          "id": "1754902590652",
+          "name": "关闭本地调试",
+          "description": "",
+          "variables": [
+            {
+              "key": "VITE_USE_LOCAL_DEV",
+              "value": "false",
+              "options": []
+            }
+          ],
+          "category": "bff调试开关"
+        },
+        {
+          "id": "1754902606365",
+          "name": "打开本地调试",
+          "description": "",
+          "variables": [
+            {
+              "key": "VITE_USE_LOCAL_DEV",
+              "value": "true",
+              "options": []
+            }
+          ],
+          "category": "bff调试开关"
+        },
+        {
+          "id": "1754902623668",
+          "name": "toRelease环境",
+          "description": "",
+          "variables": [
+            {
+              "key": "targetRequestPath",
+              "value": "k8s.supreium.com/k8s/172.16.141.170/",
+              "options": []
+            },
+            {
+              "key": "targetWsPath",
+              "value": "wss://k8s.supreium.com/k8s/172.16.141.170/",
+              "options": []
+            },
+            {
+              "key": "CloudServiceType",
+              "value": "publicCloud",
+              "options": []
+            }
+          ],
+          "category": "环境变量"
+        },
+        {
+          "id": "1754902666987",
+          "name": "alpha环境",
+          "description": "",
+          "variables": [
+            {
+              "key": "targetRequestPath",
+              "value": "https://alpha-poseidon.supreium.com/",
+              "options": []
+            },
+            {
+              "key": "targetWsPath",
+              "value": "wss://alpha-poseidon.supreium.com/",
+              "options": []
+            },
+            {
+              "key": "CloudServiceType",
+              "value": "publicCloud",
+              "options": []
+            }
+          ],
+          "category": "环境变量"
+        },
+        {
+          "variables": [
+            {
+              "key": "targetRequestPath",
+              "value": "k8s.supreium.com/k8s/172.16.251.184/",
+              "options": []
+            },
+            {
+              "key": "targetWsPath",
+              "value": "wss://k8s.supreium.com/k8s/172.16.251.184/",
+              "options": []
+            },
+            {
+              "key": "CloudServiceType",
+              "value": "publicCloud",
+              "options": []
+            }
+          ],
+          "category": "环境变量",
+          "name": "before-alpha环境",
+          "description": "",
+          "id": "1757671687638"
+        },
+        {
+          "variables": [
+            {
+              "key": "targetRequestPath",
+              "value": "https://poseidon.supreium.com/",
+              "options": []
+            },
+            {
+              "key": "targetWsPath",
+              "value": "wss://poseidon.supreium.com/",
+              "options": []
+            },
+            {
+              "key": "CloudServiceType",
+              "value": "publicCloud",
+              "options": []
+            }
+          ],
+          "category": "环境变量",
+          "name": "生产环境",
+          "description": "",
+          "id": "1758881880712"
+        },
+        {
+          "variables": [
+            {
+              "key": "targetRequestPath",
+              "value": "k8s.supreium.com/k8s/172.16.125.217/",
+              "options": []
+            },
+            {
+              "key": "targetWsPath",
+              "value": "wss://k8s.supreium.com/k8s/172.16.125.217/",
+              "options": []
+            },
+            {
+              "key": "CloudServiceType",
+              "value": "publicCloud",
+              "options": []
+            }
+          ],
+          "category": "环境变量",
+          "name": "zhgc环境",
+          "description": "",
+          "id": "1759111727431"
+        }
+      ],
+      "categoryTemplates": [
+        {
+          "id": "1754902302622",
+          "name": "环境变量",
+          "description": "",
+          "keys": [
+            "targetRequestPath",
+            "targetWsPath",
+            "CloudServiceType"
+          ]
+        },
+        {
+          "id": "1754902345372",
+          "name": "bff调试开关",
+          "description": "",
+          "keys": [
+            "VITE_USE_LOCAL_DEV"
+          ]
+        }
+      ]
+    }
+  ],
+  "created_at": "2025-08-11T03:17:39.554Z",
+  "last_modified": "2025-10-24T09:16:20.479Z"
+}]

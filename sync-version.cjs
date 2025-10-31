@@ -103,6 +103,53 @@ class VersionSyncer {
   }
 
   /**
+   * 自动读取源版本：以 package.json 的 version 为准
+   */
+  getSourceVersion() {
+    const pkgPath = path.join(this.projectRoot, 'package.json');
+    if (!fs.existsSync(pkgPath)) {
+      console.error('未找到 package.json，无法自动同步版本');
+      return null;
+    }
+    const data = this.readJsonFile(pkgPath);
+    const versionRaw = data && data.version;
+    const version = typeof versionRaw === 'string' ? versionRaw.trim() : versionRaw;
+    if (!version) {
+      console.error('package.json 未包含 version 字段');
+      return null;
+    }
+    if (!this.isValidVersion(version)) {
+      console.error(`package.json 的 version 不符合语义化规范: ${version}`);
+      return null;
+    }
+    return version;
+  }
+
+  bumpVersion(version, type = 'patch') {
+    const v = (version || '').trim();
+    const m = v.match(/^(\d+)\.(\d+)\.(\d+)(?:-[\w\.-]+)?(?:\+[\w\.-]+)?$/);
+    if (!m) return null;
+    let major = parseInt(m[1], 10);
+    let minor = parseInt(m[2], 10);
+    let patch = parseInt(m[3], 10);
+    switch (String(type)) {
+      case 'major':
+        major += 1; minor = 0; patch = 0; break;
+      case 'minor':
+        minor += 1; patch = 0; break;
+      default:
+        patch += 1;
+    }
+    const next = `${major}.${minor}.${patch}`;
+    // 保险：若计算结果与原值一致，则强制 +1 patch
+    if (next === v) {
+      const forced = `${major}.${minor}.${patch + 1}`;
+      return forced;
+    }
+    return next;
+  }
+
+  /**
    * 获取当前所有文件的版本号
    */
   getCurrentVersions() {
@@ -230,19 +277,20 @@ class VersionSyncer {
    * 显示帮助信息
    */
   showHelp() {
-    console.log(`
-🔧 版本同步工具
-`);
+    console.log(`\n🔧 版本同步工具\n`);
     console.log('用法:');
-    console.log('  node sync-version.js [命令] [版本号]\n');
+    console.log('  node sync-version.cjs [命令] [版本号]\n');
     console.log('命令:');
     console.log('  show, status, s     显示当前版本状态');
-    console.log('  sync [版本号]       同步到指定版本');
+    console.log('  sync [版本号]       同步到指定版本；若省略版本号，将自动以 package.json 的 version 为准');
+    console.log('  auto                自动递增并同步（默认 patch），可通过环境变量 BUMP=major/minor/patch 指定');
     console.log('  help, h            显示帮助信息\n');
     console.log('示例:');
-    console.log('  node sync-version.js show');
-    console.log('  node sync-version.js sync 1.2.0');
-    console.log('  node sync-version.js sync 2.0.0-beta.1');
+    console.log('  node sync-version.cjs              # 自动递增 patch 并同步');
+    console.log('  BUMP=minor node sync-version.cjs   # 自动递增 minor 并同步');
+    console.log('  node sync-version.cjs show');
+    console.log('  node sync-version.cjs sync 1.2.0');
+    console.log('  node sync-version.cjs sync 2.0.0-beta.1');
   }
 }
 
@@ -251,8 +299,17 @@ function main() {
   const syncer = new VersionSyncer();
   const args = process.argv.slice(2);
 
+  // 无参数：自动递增（默认 patch）并同步
   if (args.length === 0) {
-    syncer.showCurrentVersions();
+    const src = syncer.getSourceVersion();
+    const bumpType = process.env.BUMP || 'patch';
+    const next = src && syncer.bumpVersion(src, bumpType);
+    console.log(`\n📦 源版本: ${src}  |  递增类型: ${bumpType}  |  目标版本: ${next}`);
+    if (next) {
+      syncer.syncToVersion(next);
+    } else {
+      syncer.showCurrentVersions();
+    }
     return;
   }
 
@@ -264,21 +321,36 @@ function main() {
     case 's':
       syncer.showCurrentVersions();
       break;
-      
-    case 'sync':
-      if (args.length < 2) {
-        console.error('❌ 请指定要同步的版本号');
-        console.log('示例: node sync-version.js sync 1.2.0');
+
+    case 'sync': {
+      const target = args[1] || syncer.getSourceVersion();
+      if (!target) {
+        console.error('❌ 无法确定目标版本');
+        syncer.showHelp();
         process.exit(1);
       }
-      syncer.syncToVersion(args[1]);
+      syncer.syncToVersion(target);
       break;
-      
+    }
+
+    case 'auto': {
+      const src = syncer.getSourceVersion();
+      const bumpType = process.env.BUMP || 'patch';
+      const next = src && syncer.bumpVersion(src, bumpType);
+      console.log(`\n📦 源版本: ${src}  |  递增类型: ${bumpType}  |  目标版本: ${next}`);
+      if (!next) {
+        console.error('❌ 自动同步失败：无法计算下一个版本');
+        process.exit(1);
+      }
+      syncer.syncToVersion(next);
+      break;
+    }
+
     case 'help':
     case 'h':
       syncer.showHelp();
       break;
-      
+
     default:
       console.error(`❌ 未知命令: ${command}`);
       syncer.showHelp();

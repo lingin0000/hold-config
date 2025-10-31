@@ -1,7 +1,7 @@
 {
   "name": "hold-config",
   "private": true,
-  "version": "1.0.6",
+  "version": "1.0.7",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "version:show": "node sync-version.cjs show",
-    "version:sync": "node sync-version.cjs sync"
+    "update:ver": "node sync-version.cjs sync"
   },
   "dependencies": {
     "@douyinfe/semi-icons": "^2.86.0",

@@ -13,6 +13,7 @@ import { CategoryTemplateDialog } from "./components/CategoryTemplateDialog";
 import { useProjectManager } from "./hooks/useProjectManager";
 import { useConfigManager } from "./hooks/useConfigManager";
 import { WorkArea } from "./components/WorkArea";
+import { QuickSwitchPanel } from "./components/QuickSwitchPanel";
 
 import { useApp } from "./hooks/useApp";
 import { CategoryTemplate } from "./types";
@@ -28,6 +29,18 @@ function App() {
     projectManager.projects
   );
 
+  // 当以悬浮窗模式打开（/?quick=1）时，渲染精简面板
+  const isQuick =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("quick") === "1";
+
+  if (isQuick) {
+    return (
+      <ConfigProvider>
+        <QuickSwitchPanel />
+      </ConfigProvider>
+    );
+  }
   const {
     updateTrayMenu,
     handleTrayConfigApplication,
@@ -94,7 +107,9 @@ function App() {
               onImportProjectConfig={importProjectConfig}
             />
           </ResizeItem>
-          <ResizeHandler />
+          <ResizeHandler
+            style={{ backgroundColor: "var(--semi-color-fill-2)" }}
+          />
           <ResizeItem
             style={{
               backgroundColor: "rgba(var(--semi-grey-1), 1)",
