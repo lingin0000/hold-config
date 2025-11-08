@@ -83,6 +83,11 @@ export const useConfigManager = (
     setSelectedGroupsByCategory(new Map());
   }, [selectedEnvFile]);
 
+  // 切换项目或当前环境文件实例变化时清除选择（增强鲁棒性）
+  useEffect(() => {
+    setSelectedGroupsByCategory(new Map());
+  }, [currentProject?.id, currentEnvFile?.name]);
+
   // 获取当前选中的所有配置组ID列表
   const getSelectedGroupIds = (): string[] => {
     return Array.from(selectedGroupsByCategory.values());

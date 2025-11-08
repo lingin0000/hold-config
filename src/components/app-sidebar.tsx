@@ -12,8 +12,6 @@ import {
   SidebarContent,
   SidebarHeader,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
@@ -54,33 +52,30 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
-        <SidebarGroup>
-          <SidebarGroupLabel>项目列表</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {projects?.length ? (
-                projects.map((p) => (
-                  <SidebarMenuItem key={p.id}>
-                    <SidebarMenuButton
-                      onClick={() => onSelectProject?.(p.id)}
-                      isActive={selectedProjectId === p.id}
-                    >
-                      <IconFolder />
-                      <span>{p.name}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))
-              ) : (
-                <SidebarMenuItem>
-                  <SidebarMenuButton disabled>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {projects?.length ? (
+              projects.map((p) => (
+                <SidebarMenuItem key={p.id}>
+                  <SidebarMenuButton
+                    onClick={() => onSelectProject?.(p.id)}
+                    isActive={selectedProjectId === p.id}
+                  >
                     <IconFolder />
-                    <span>暂无项目</span>
+                    <span>{p.name}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+              ))
+            ) : (
+              <SidebarMenuItem>
+                <SidebarMenuButton disabled>
+                  <IconFolder />
+                  <span>暂无项目</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+          </SidebarMenu>
+        </SidebarGroupContent>
       </SidebarHeader>
       <SidebarContent />
       <SidebarFooter className="mt-auto">
@@ -125,6 +120,11 @@ export function AppSidebar({
                   <DropdownMenuRadioItem value="violet">紫罗兰</DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="rose">玫瑰红</DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="amber">琥珀黄</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="sky">天空蓝</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="indigo">靛青</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="teal">青蓝</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="lime">青柠绿</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="slate">石板灰</DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>

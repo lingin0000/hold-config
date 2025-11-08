@@ -1,7 +1,18 @@
 import { useEffect, useState } from "react";
 
 export type ThemeMode = "light" | "dark" | "system";
-export type ThemePreset = "default" | "ocean" | "forest" | "violet" | "rose" | "amber";
+export type ThemePreset =
+  | "default"
+  | "ocean"
+  | "forest"
+  | "violet"
+  | "rose"
+  | "amber"
+  | "sky"
+  | "indigo"
+  | "teal"
+  | "lime"
+  | "slate";
 
 export function useTheme() {
   const [mode, setMode] = useState<ThemeMode>(() => {
@@ -100,6 +111,46 @@ export function useTheme() {
           setVar("--accent-foreground", "oklch(0.205 0 0)");
           setVar("--sidebar-primary", "oklch(0.82 0.19 85)");
           setVar("--sidebar-primary-foreground", "oklch(0.145 0 0)");
+          break;
+        case "sky":
+          setVar("--primary", "oklch(0.78 0.14 230)");
+          setVar("--primary-foreground", "oklch(0.145 0 0)");
+          setVar("--accent", "oklch(0.94 0.10 230)");
+          setVar("--accent-foreground", "oklch(0.205 0 0)");
+          setVar("--sidebar-primary", "oklch(0.78 0.14 230)");
+          setVar("--sidebar-primary-foreground", "oklch(0.145 0 0)");
+          break;
+        case "indigo":
+          setVar("--primary", "oklch(0.56 0.17 282)");
+          setVar("--primary-foreground", "oklch(0.985 0 0)");
+          setVar("--accent", "oklch(0.90 0.08 282)");
+          setVar("--accent-foreground", "oklch(0.205 0 0)");
+          setVar("--sidebar-primary", "oklch(0.56 0.17 282)");
+          setVar("--sidebar-primary-foreground", "oklch(0.985 0 0)");
+          break;
+        case "teal":
+          setVar("--primary", "oklch(0.64 0.14 205)");
+          setVar("--primary-foreground", "oklch(0.985 0 0)");
+          setVar("--accent", "oklch(0.92 0.08 205)");
+          setVar("--accent-foreground", "oklch(0.205 0 0)");
+          setVar("--sidebar-primary", "oklch(0.64 0.14 205)");
+          setVar("--sidebar-primary-foreground", "oklch(0.985 0 0)");
+          break;
+        case "lime":
+          setVar("--primary", "oklch(0.86 0.18 125)");
+          setVar("--primary-foreground", "oklch(0.145 0 0)");
+          setVar("--accent", "oklch(0.94 0.12 125)");
+          setVar("--accent-foreground", "oklch(0.205 0 0)");
+          setVar("--sidebar-primary", "oklch(0.86 0.18 125)");
+          setVar("--sidebar-primary-foreground", "oklch(0.145 0 0)");
+          break;
+        case "slate":
+          setVar("--primary", "oklch(0.52 0.04 250)");
+          setVar("--primary-foreground", "oklch(0.985 0 0)");
+          setVar("--accent", "oklch(0.92 0.03 250)");
+          setVar("--accent-foreground", "oklch(0.205 0 0)");
+          setVar("--sidebar-primary", "oklch(0.52 0.04 250)");
+          setVar("--sidebar-primary-foreground", "oklch(0.985 0 0)");
           break;
       }
     };

@@ -81,7 +81,7 @@ export const ConfigGroupDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-2xl w-[860px]">
         <DialogHeader>
           <DialogTitle>
             {isNewGroup ? "添加配置" : editingGroup?.id ? "编辑配置" : "复制配置"}
@@ -136,14 +136,14 @@ export const ConfigGroupDialog = ({
 
           {/* 变量列表 */}
           {variables.length > 0 ? (
-            <div className="mt-2 flex flex-col gap-2">
+            <div className="mt-2 flex flex-col gap-2 max-h-[60vh] overflow-auto pr-1">
               {variables.map((v, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <div className="w-72 grid gap-1">
+                <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="min-w-0 grid gap-1">
                     <Label htmlFor={`var-key-${idx}`}>{`变量${idx + 1}`}</Label>
                     <Input id={`var-key-${idx}`} type="text" value={v.key} disabled className="w-full" />
                   </div>
-                  <div className="w-72 grid gap-1">
+                  <div className="min-w-0 grid gap-1">
                     <Label htmlFor={`var-val-${idx}`}>值</Label>
                     <Input
                       id={`var-val-${idx}`}

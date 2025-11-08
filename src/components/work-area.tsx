@@ -140,16 +140,16 @@ export const WorkArea: React.FC<WorkAreaProps> = ({
             <EnvFileTabs
               envFiles={currentProject.env_files}
               selectedEnvFile={selectedEnvFile}
-              onEnvFileSelect={onSetSelectedEnvFile}
+              onEnvFileSelect={(value) => {
+                // 切换任务（环境文件）时清除已选配置组
+                clearSelection();
+                onSetSelectedEnvFile(value);
+              }}
             />
 
             {/* 配置管理区域 */}
             {currentEnvFile && (
               <div className="h-full flex flex-col">
-                {/* 分类模板管理已移至项目头部的弹窗入口 */}
-
-                {/* 添加配置组入口已移至网格中的占位卡片 */}
-
                 {/* 配置组网格 */}
                 {renderGroupsByCategory()}
 
