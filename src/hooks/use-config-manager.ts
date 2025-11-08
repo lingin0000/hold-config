@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { EnvGroup, CategoryTemplate, Project, EnvFile } from "../types";
-import { Toast } from "@douyinfe/semi-ui";
+import Toast from "../lib/toast";
 
 // 常量定义
 const DEFAULT_CATEGORY = "未分类";

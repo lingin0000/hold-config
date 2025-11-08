@@ -1,13 +1,13 @@
 import React from "react";
-import { Typography, Table, Tag } from "@douyinfe/semi-ui";
 import { EnvFile } from "../types";
+import { Text } from "./ui/typography";
+import { Badge } from "./ui/badge";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "./ui/table";
 
 export interface MergePreviewProps {
   envFile: EnvFile;
   selectedGroupIds: string[];
 }
-
-const { Text } = Typography;
 
 export const MergePreview: React.FC<MergePreviewProps> = ({
   envFile,
@@ -66,48 +66,36 @@ export const MergePreview: React.FC<MergePreviewProps> = ({
   }, [envFile.groups, selectedGroupIds, existingKeys]);
 
   return (
-    <div
-      style={{
-        padding: 12,
-        marginBottom: 24,
-      }}
-    >
+    <div className="p-3 mb-6">
       {previewData.length === 0 ? (
         <Text>没有可预览的内容</Text>
       ) : (
-        <div>
-          <Table
-            columns={[
-              {
-                title: "状态",
-                dataIndex: "status",
-                width: 80,
-              },
-              {
-                title: "环境变量",
-                dataIndex: "key",
-              },
-              {
-                title: "值",
-                dataIndex: "value",
-              },
-              {
-                title: "源配置组",
-                dataIndex: "group",
-              },
-              {
-                title: "分类",
-                dataIndex: "category",
-                render: (category) => (
-                  <Tag shape="circle" color="green">
-                    {category}
-                  </Tag>
-                ),
-              },
-            ]}
-            dataSource={previewData}
-          />
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-20">状态</TableHead>
+              <TableHead>环境变量</TableHead>
+              <TableHead>值</TableHead>
+              <TableHead>源配置组</TableHead>
+              <TableHead>分类</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {previewData.map((row) => (
+              <TableRow key={`${row.key}-${row.group}`}>
+                <TableCell>
+                  <Badge variant={row.status === "覆盖" ? "secondary" : "outline"}>{row.status}</Badge>
+                </TableCell>
+                <TableCell className="font-mono">{row.key}</TableCell>
+                <TableCell className="font-mono break-words whitespace-pre-wrap">{row.value}</TableCell>
+                <TableCell>{row.group}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary">{row.category}</Badge>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   );

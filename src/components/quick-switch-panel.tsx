@@ -1,10 +1,12 @@
 import React from "react";
-import { Button, Typography, Card, Collapse, Toast } from "@douyinfe/semi-ui";
-import { IconFile } from "@douyinfe/semi-icons";
-import { useProjectManager } from "../hooks/useProjectManager";
-import { useConfigManager } from "../hooks/useConfigManager";
-
-const { Title, Text } = Typography;
+import { Button } from "./ui/button";
+import { Card, CardHeader, CardTitle, CardContent, CardAction } from "./ui/card";
+import { Title, Text } from "./ui/typography";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./ui/accordion";
+import { File } from "lucide-react";
+import { useProjectManager } from "../hooks/use-project-manager";
+import { useConfigManager } from "../hooks/use-config-manager";
+import Toast from "../lib/toast";
 
 // 悬浮窗：快速切换环境
 export const QuickSwitchPanel: React.FC = () => {
@@ -48,64 +50,50 @@ export const QuickSwitchPanel: React.FC = () => {
   const current = projectManager.currentProject;
 
   return (
-    <div
-      style={{
-        padding: 12,
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-        background: "var(--semi-color-bg-1)",
-      }}
-    >
-      <Title heading={5} style={{ margin: 0 }}>
-        快速切换
-      </Title>
+    <div className="flex flex-col gap-3 p-3 bg-background">
+      <Title level={5} className="m-0">快速切换</Title>
 
       {/* 项目列表：当未选择项目时也显示，用于选择目标项目 */}
-      <Card headerLine={false} title="选择项目">
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <Card>
+        <CardHeader>
+          <CardTitle>选择项目</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
           {projectManager.projects.length === 0 ? (
             <Text>未检测到项目，请在主窗口添加或提供 default.json</Text>
           ) : (
             projectManager.projects.map((p) => (
               <Button
                 key={p.id}
-                theme={current?.id === p.id ? "solid" : "light"}
-                type={current?.id === p.id ? "primary" : "tertiary"}
+                variant={current?.id === p.id ? "default" : "outline"}
+                size="sm"
                 onClick={() => projectManager.handleProjectSelect(p.id)}
               >
                 {p.name}
               </Button>
             ))
           )}
-        </div>
+          </div>
+        </CardContent>
       </Card>
 
       {/* 当前项目名称显示（仅在已选择项目时） */}
       {current && (
-        <Title heading={6} style={{ margin: 0 }}>
-          当前项目：{current.name}
-        </Title>
+        <Title className="m-0">当前项目：{current.name}</Title>
       )}
 
       {/* 环境文件按钮组（仅在已选择项目时显示） */}
       {current && (
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <div className="flex flex-wrap gap-2">
           {current.env_files.map((f) => (
             <Button
               key={f.path}
-              icon={<IconFile />}
-              theme={
-                projectManager.selectedEnvFile === f.name ? "solid" : "light"
-              }
-              type={
-                projectManager.selectedEnvFile === f.name
-                  ? "primary"
-                  : "tertiary"
-              }
+              variant={projectManager.selectedEnvFile === f.name ? "default" : "outline"}
+              size="sm"
               onClick={() => projectManager.setSelectedEnvFile(f.name)}
             >
-              {f.name}
+              <File className="mr-2 size-4" /> {f.name}
             </Button>
           ))}
         </div>
@@ -116,36 +104,33 @@ export const QuickSwitchPanel: React.FC = () => {
         current.env_files.map(
           (env) =>
             env.name === projectManager.selectedEnvFile && (
-              <Collapse
+              <Accordion
                 key={env.path}
-                defaultActiveKey={env.groups.map((g) => g.category || "未分类")}
+                type="multiple"
+                defaultValue={Array.from(new Set(env.groups.map((g) => g.category || "未分类")))}
               >
                 {Array.from(
                   configManager.getGroupsByCategory(env.groups).entries()
                 ).map(([cat, groups]) => (
-                  <Collapse.Panel header={cat} itemKey={cat} key={cat}>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 8,
-                      }}
-                    >
-                      {groups.map((g) => (
-                        <Card key={g.id} title={g.name}>
-                          <Button
-                            theme="solid"
-                            type="primary"
-                            onClick={() => onApplyGroup(g.id!)}
-                          >
-                            应用该组
-                          </Button>
-                        </Card>
-                      ))}
-                    </div>
-                  </Collapse.Panel>
+                  <AccordionItem value={cat} key={cat}>
+                    <AccordionTrigger>{cat}</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-col gap-2">
+                        {groups.map((g) => (
+                          <Card key={g.id}>
+                            <CardHeader>
+                              <CardTitle className="text-sm">{g.name}</CardTitle>
+                              <CardAction>
+                                <Button size="sm" onClick={() => onApplyGroup(g.id!)}>应用该组</Button>
+                              </CardAction>
+                            </CardHeader>
+                          </Card>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-              </Collapse>
+              </Accordion>
             )
         )}
     </div>

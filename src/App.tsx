@@ -1,21 +1,15 @@
 import { useEffect } from "react";
-
-import {
-  ConfigProvider,
-  ResizeGroup,
-  ResizeHandler,
-  ResizeItem,
-} from "@douyinfe/semi-ui"; // 引入 Semi 的全局配置 Provider，用于主题切换
+import { Toaster } from "./components/ui/sonner"
 import { listen } from "@tauri-apps/api/event";
-import { ProjectSidebar } from "./components/ProjectSidebar";
-import { ConfigGroupDialog } from "./components/ConfigGroupDialog";
-import { CategoryTemplateDialog } from "./components/CategoryTemplateDialog";
-import { useProjectManager } from "./hooks/useProjectManager";
-import { useConfigManager } from "./hooks/useConfigManager";
-import { WorkArea } from "./components/WorkArea";
-import { QuickSwitchPanel } from "./components/QuickSwitchPanel";
+import { ProjectSidebar } from "./components/project-sidebar";
+import { ConfigGroupDialog } from "./components/config-group-dialog";
+import { CategoryTemplateDialog } from "./components/category-template-dialog";
+import { useProjectManager } from "./hooks/use-project-manager";
+import { useConfigManager } from "./hooks/use-config-manager";
+import { WorkArea } from "./components/work-area";
+import { QuickSwitchPanel } from "./components/quick-switch-panel";
 
-import { useApp } from "./hooks/useApp";
+import { useApp } from "./hooks/use-app";
 import { CategoryTemplate } from "./types";
 
 function App() {
@@ -35,17 +29,13 @@ function App() {
     new URLSearchParams(window.location.search).get("quick") === "1";
 
   if (isQuick) {
-    return (
-      <ConfigProvider>
-        <QuickSwitchPanel />
-      </ConfigProvider>
-    );
+    return <QuickSwitchPanel />;
   }
   const {
     updateTrayMenu,
     handleTrayConfigApplication,
-    exportProjectConfig,
-    importProjectConfig,
+    exportAllConfigs,
+    importAllConfigs,
     modifyProjectPath,
   } = useApp({
     projectManager,
@@ -85,98 +75,73 @@ function App() {
   }, [projectManager.projects]);
 
   return (
-    <ConfigProvider>
-      <div style={{ width: "100%", height: "100%" }}>
-        <ResizeGroup direction="horizontal">
-          <ResizeItem
-            style={{
-              backgroundColor: "rgba(var(--semi-grey-1), 1)",
-              border: "var(--semi-color-border) 1px solid",
-            }}
-            defaultSize="20%"
-            min="10%"
-          >
-            <ProjectSidebar
-              projects={projectManager.projects}
-              selectedProject={projectManager.selectedProject}
-              onProjectSelect={projectManager.handleProjectSelect}
-              onProjectRefresh={(projectId) =>
-                projectManager.refreshProject(projectId)
-              }
-              onAddProject={() => projectManager.selectProjectFolder()}
-              onImportProjectConfig={importProjectConfig}
-            />
-          </ResizeItem>
-          <ResizeHandler
-            style={{ backgroundColor: "var(--semi-color-fill-2)" }}
-          />
-          <ResizeItem
-            style={{
-              backgroundColor: "rgba(var(--semi-grey-1), 1)",
-              border: "var(--semi-color-border) 1px solid",
-            }}
-            defaultSize="80%"
-            min="40%"
-          >
-            <WorkArea
-              currentProject={projectManager.currentProject}
-              selectedEnvFile={projectManager.selectedEnvFile}
-              currentEnvFile={projectManager.currentEnvFile}
-              isLoading={projectManager.isLoading}
-              onSelectProjectFolder={() => projectManager.selectProjectFolder()}
-              onRefreshProject={(projectId) =>
-                projectManager.refreshProject(projectId)
-              }
-              onSetSelectedEnvFile={projectManager.setSelectedEnvFile}
-              getCategoryTemplates={configManager.getCategoryTemplates}
-              onOpenCategoryDialog={(template) =>
-                configManager.openCategoryDialog(template)
-              }
-              onDeleteCategoryTemplate={(templateId) =>
-                configManager.deleteCategoryTemplate(templateId)
-              }
-              onCopyTemplate={(template) =>
-                configManager.copyTemplate(template)
-              }
-              onOpenGroupDialog={() => configManager.openGroupDialog()}
-              getGroupsByCategory={configManager.getGroupsByCategory}
-              isGroupSelected={configManager.isGroupSelected}
-              handleGroupSelect={configManager.handleGroupSelect}
-              onEditGroup={configManager.openGroupDialog}
-              onDeleteGroup={(groupId) => configManager.deleteGroup(groupId)}
-              getSelectedGroupIds={configManager.getSelectedGroupIds}
-              clearSelection={configManager.clearSelection}
-              saveMergedEnvFile={configManager.saveMergedEnvFile}
-              setEditingGroup={configManager.setEditingGroup}
-              onExportProjectConfig={exportProjectConfig}
-              onModifyProjectPath={modifyProjectPath}
-              onProjectDelete={projectManager.deleteProject}
-            />
-          </ResizeItem>
-        </ResizeGroup>
-
-        <ConfigGroupDialog
-          isOpen={configManager.isGroupDialogOpen}
-          isNewGroup={configManager.isNewGroup}
-          editingGroup={configManager.editingGroup}
-          categoryTemplates={configManager.getCategoryTemplates()}
-          onClose={configManager.closeGroupDialog}
-          onSave={(group) => configManager.saveGroup(group)}
-          onGroupChange={configManager.setEditingGroup}
-        />
-
-        {/* 分类模板编辑对话框 */}
-        <CategoryTemplateDialog
-          isOpen={configManager.isCategoryDialogOpen}
-          isNewTemplate={configManager.isNewTemplate}
-          editingTemplate={configManager.editingTemplate}
-          onClose={configManager.closeCategoryDialog}
-          onSave={(data: CategoryTemplate) =>
-            configManager.saveCategoryTemplate(data)
-          }
+    <div className="w-full h-full flex">
+      <div className="w-1/5 min-w-[220px] border-r bg-background">
+        <ProjectSidebar
+          projects={projectManager.projects}
+          selectedProject={projectManager.selectedProject}
+          onProjectSelect={projectManager.handleProjectSelect}
+          onProjectRefresh={(projectId) => projectManager.refreshProject(projectId)}
+          onAddProject={() => projectManager.selectProjectFolder()}
+          onImportAllConfigs={importAllConfigs}
+          onExportAllConfigs={exportAllConfigs}
         />
       </div>
-    </ConfigProvider>
+      <div className="flex-1">
+        <WorkArea
+          currentProject={projectManager.currentProject}
+          selectedEnvFile={projectManager.selectedEnvFile}
+          currentEnvFile={projectManager.currentEnvFile}
+          isLoading={projectManager.isLoading}
+          onSelectProjectFolder={() => projectManager.selectProjectFolder()}
+          onRefreshProject={(projectId) =>
+            projectManager.refreshProject(projectId)
+          }
+          onSetSelectedEnvFile={projectManager.setSelectedEnvFile}
+          getCategoryTemplates={configManager.getCategoryTemplates}
+          onOpenCategoryDialog={(template) =>
+            configManager.openCategoryDialog(template)
+          }
+          onDeleteCategoryTemplate={(templateId) =>
+            configManager.deleteCategoryTemplate(templateId)
+          }
+          onCopyTemplate={(template) => configManager.copyTemplate(template)}
+          onOpenGroupDialog={() => configManager.openGroupDialog()}
+          getGroupsByCategory={configManager.getGroupsByCategory}
+          isGroupSelected={configManager.isGroupSelected}
+          handleGroupSelect={configManager.handleGroupSelect}
+          onEditGroup={configManager.openGroupDialog}
+          onDeleteGroup={(groupId) => configManager.deleteGroup(groupId)}
+          getSelectedGroupIds={configManager.getSelectedGroupIds}
+          clearSelection={configManager.clearSelection}
+          saveMergedEnvFile={configManager.saveMergedEnvFile}
+          setEditingGroup={configManager.setEditingGroup}
+          onModifyProjectPath={modifyProjectPath}
+          onProjectDelete={projectManager.deleteProject}
+        />
+      </div>
+
+      <ConfigGroupDialog
+        isOpen={configManager.isGroupDialogOpen}
+        isNewGroup={configManager.isNewGroup}
+        editingGroup={configManager.editingGroup}
+        categoryTemplates={configManager.getCategoryTemplates()}
+        onClose={configManager.closeGroupDialog}
+        onSave={(group) => configManager.saveGroup(group)}
+        onGroupChange={configManager.setEditingGroup}
+      />
+
+      <CategoryTemplateDialog
+        isOpen={configManager.isCategoryDialogOpen}
+        isNewTemplate={configManager.isNewTemplate}
+        editingTemplate={configManager.editingTemplate}
+        onClose={configManager.closeCategoryDialog}
+        onSave={(data: CategoryTemplate) =>
+          configManager.saveCategoryTemplate(data)
+        }
+      />
+      <Toaster />
+    </div>
   );
 }
 

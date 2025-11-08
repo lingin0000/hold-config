@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { Project, EnvFile, EnvVariable } from "../types";
-import { Toast } from "@douyinfe/semi-ui";
+import { toast } from "sonner"; // 引入 toast 替换 Toast
 import { readTextFile } from "@tauri-apps/plugin-fs"; // 读取默认配置文件用
 
 export const useProjectManager = () => {
@@ -50,8 +50,7 @@ export const useProjectManager = () => {
       // 2.2) Tauri 桌面模式：通过文件系统读取
       if (!defaultProjects) {
         try {
-          const canUseTauri =
-            typeof window !== "undefined" && (window as any).__TAURI__;
+          const canUseTauri = !!(import.meta as any).env?.TAURI_PLATFORM || !!(window as any)?.__TAURI__;
           if (canUseTauri) {
             let jsonText = "";
             try {
@@ -139,7 +138,7 @@ export const useProjectManager = () => {
         const existingProject = projects.find((p) => p.path === projectPath);
         if (existingProject) {
           handleProjectSelect(existingProject.id);
-          Toast.warning("项目已存在");
+          toast.warning("项目已存在");
           return;
         }
 
@@ -175,7 +174,7 @@ export const useProjectManager = () => {
           const updatedProjects = [...projects, newProject];
           saveProjectsToLocal(updatedProjects);
           handleProjectSelect(newProject.id);
-          Toast.success("项目添加成功");
+          toast.success("项目添加成功");
         } catch (invokeError) {
           console.error("扫描环境文件失败:", invokeError);
           // 如果后端命令失败，创建一个空项目
@@ -204,12 +203,12 @@ export const useProjectManager = () => {
           const updatedProjects = [...projects, newProject];
           saveProjectsToLocal(updatedProjects);
           handleProjectSelect(newProject.id);
-          Toast.success("项目添加成功（未找到环境文件）");
+          toast.success("项目添加成功（未找到环境文件）");
         }
       }
     } catch (error) {
       console.error("选择项目文件夹失败:", error);
-      Toast.error("选择项目失败");
+      toast.error("选择项目失败");
     } finally {
       setIsLoading(false);
     }
@@ -274,10 +273,10 @@ export const useProjectManager = () => {
       );
 
       saveProjectsToLocal(updatedProjects);
-      Toast.success("项目刷新成功");
+      toast.success("项目刷新成功");
     } catch (error) {
       console.error("刷新项目失败:", error);
-      Toast.error("刷新项目失败");
+      toast.error("刷新项目失败");
     }
   };
 
