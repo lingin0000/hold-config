@@ -2,7 +2,7 @@ import { Project } from "../types";
 
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
-import { Import, PlusCircle, Upload, FolderUp, Settings } from "lucide-react";
+import { Import, Upload, FolderUp, Settings } from "lucide-react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "./ui/select";
 import { useTheme } from "../hooks/use-theme";
 
