@@ -2,7 +2,6 @@ import { EnvGroup } from "../types";
 import { useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import { Title, Text } from "./ui/typography";
 import { ChevronDown, ChevronUp, Pen, Copy, Trash2 } from "lucide-react";
 import {

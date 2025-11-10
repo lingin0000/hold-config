@@ -2,8 +2,6 @@ import { CategoryTemplate } from "../types";
 import { Button } from "./ui/button";
 import { Card, CardTitle, CardContent } from "./ui/card";
 import { Empty } from "./ui/empty";
-import { Title } from "./ui/typography";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "./ui/accordion";
 import {
   Plus,
   Copy,
