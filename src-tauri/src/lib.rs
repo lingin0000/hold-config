@@ -171,6 +171,13 @@ fn export_project_config(project_data: String, project_name: String) -> Result<S
     Ok(file_path.to_string_lossy().to_string())
 }
 
+// 新增：按文件路径读取文本内容（用于预览 .env 等文件）
+#[tauri::command]
+fn read_env_file(file_path: String) -> Result<String, String> {
+    // 直接使用 Rust 标准库读取，避免前端插件 fs 的能力范围限制
+    std::fs::read_to_string(&file_path).map_err(|e| format!("读取失败: {}", e))
+}
+
 // 更新托盘菜单的命令
 #[tauri::command]
 fn update_tray_menu(app: tauri::AppHandle, projects: Vec<TrayProjectData>) -> Result<(), String> {
@@ -361,7 +368,8 @@ pub fn run() {
             load_project_config,
             save_project_config,
             update_tray_menu,
-            export_project_config
+            export_project_config,
+            read_env_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

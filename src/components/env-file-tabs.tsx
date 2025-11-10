@@ -1,9 +1,15 @@
 import { EnvFile } from "../types";
 import { useState } from "react";
-import { readTextFile } from "@tauri-apps/plugin-fs";
+import { invoke } from "@tauri-apps/api/core";
 import { ButtonGroup } from "./ui/button-group";
 import { Button } from "./ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
 import { Spinner } from "./ui/spinner";
 import { toast } from "sonner";
 
@@ -46,9 +52,14 @@ export const EnvFileTabs = ({
     let text = current.content || "";
     try {
       if (current.path) {
-        text = await readTextFile(current.path);
+        // 通过后端命令读取文件，绕过前端 fs 插件的能力限制
+        // 注意：后端命令在 tauri invoke handler 中已注册为 read_env_file
+        text = await invoke<string>("read_env_file", {
+          filePath: current.path,
+        });
       }
     } catch (e) {
+      console.error("读取文件失败", e);
       toast.error("读取文件失败，已回退到缓存内容");
     } finally {
       setPreviewContent(text || "");
