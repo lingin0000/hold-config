@@ -21,6 +21,9 @@ export function useTheme() {
     return (saved as ThemeMode) || "system";
   });
 
+  // 新增：解析后的实际主题（light/dark）
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+
   const [preset, setPreset] = useState<ThemePreset>(() => {
     if (typeof window === "undefined") return "default";
     const saved = localStorage.getItem("theme-preset");
@@ -33,11 +36,14 @@ export function useTheme() {
       const isDark =
         target === "dark" ||
         (target === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      
       root.classList.toggle("dark", !!isDark);
       root.setAttribute("data-theme", target);
+      
+      setResolvedTheme(isDark ? "dark" : "light");
     };
+    
     applyMode(mode);
-
     localStorage.setItem("theme-mode", mode);
 
     if (mode === "system") {
@@ -164,6 +170,7 @@ export function useTheme() {
     setMode,
     preset,
     setPreset,
+    resolvedTheme, // 暴露解析后的主题
   };
 }
 

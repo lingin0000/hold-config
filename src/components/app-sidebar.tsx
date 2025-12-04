@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   IconFolder,
   IconSettings,
@@ -8,6 +8,8 @@ import {
   IconFolderUp,
   IconCode,
   IconInfoCircle,
+  IconHelp,
+  IconRefresh
 } from "@tabler/icons-react";
 
 import {
@@ -28,12 +30,14 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import useTheme, { type ThemeMode, type ThemePreset } from "@/hooks/use-theme";
 import type { Project } from "@/types";
 import { getVersion } from "@tauri-apps/api/app";
 import { toast } from "sonner";
 import { openInDefaultBrowser } from "@/lib/utils";
+import { AboutDialog } from "./about-dialog";
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   projects?: Project[];
@@ -57,6 +61,7 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const { mode, setMode, preset, setPreset } = useTheme();
   const [version, setVersion] = useState<string>("");
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   // 读取应用版本号并显示在设置菜单中
   useEffect(() => {
@@ -66,10 +71,10 @@ export function AppSidebar({
   }, []);
 
   // 检查 GitHub Releases 最新版本并提示
-  const checkLatestRelease = async () => {
-    const toastId = "check-update-" + Math.random().toString(36).slice(2);
+  const checkLatestRelease = useCallback(async (silent = false) => {
+    const toastId = silent ? undefined : "check-update-" + Math.random().toString(36).slice(2);
     try {
-      toast.loading("正在检查最新版本...", { id: toastId });
+      if (!silent) toast.loading("正在检查最新版本...", { id: toastId });
 
       let remoteVersion = "";
       let downloadUrl = "";
@@ -155,7 +160,8 @@ export function AppSidebar({
 
       if (compare > 0) {
         // 发现新版本
-        toast.success(`发现新版本：v${remoteVersion}`, {
+        const toastFn = silent ? toast.info : toast.success;
+        toastFn(`发现新版本：v${remoteVersion}`, {
           id: toastId,
           duration: 10000, // 延长显示时间
           description: (
@@ -187,7 +193,7 @@ export function AppSidebar({
         });
 
         // 如果有下载链接，额外提供一个查看详情的选项（可选）
-        if (downloadUrl) {
+        if (downloadUrl && !silent) {
           setTimeout(() => {
             toast.info(`v${remoteVersion} 更新详情`, {
               description: releaseNotes || "点击查看完整更新日志",
@@ -201,21 +207,42 @@ export function AppSidebar({
         }
       } else {
         // 已是最新
-        toast.success(`当前已是最新版本：v${version}`, {
-          id: toastId,
-          description: `远程版本：v${remoteVersion} (最新)`,
-          action: {
-            label: "查看",
-            onClick: () => {
-              if (releaseUrl) openInDefaultBrowser(releaseUrl);
+        if (!silent) {
+          toast.success(`当前已是最新版本：v${version}`, {
+            id: toastId,
+            description: `远程版本：v${remoteVersion} (最新)`,
+            action: {
+              label: "查看",
+              onClick: () => {
+                if (releaseUrl) openInDefaultBrowser(releaseUrl);
+              },
             },
-          },
-        });
+          });
+        }
       }
     } catch (e: any) {
-      toast.error(`检查失败：${e?.message ?? "网络错误"}`);
+      if (!silent) toast.error(`检查失败：${e?.message ?? "网络错误"}`, { id: toastId });
     }
-  };
+  }, [version]);
+
+  // 启动时自动检查更新（延迟 5 秒）
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (version) checkLatestRelease(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [version, checkLatestRelease]);
+
+  // 每天 2 点自动检查
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      if (now.getHours() === 2 && now.getMinutes() === 0) {
+        if (version) checkLatestRelease(true);
+      }
+    }, 60 * 1000); // 每分钟检查一次时间
+    return () => clearInterval(interval);
+  }, [version, checkLatestRelease]);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -248,13 +275,30 @@ export function AppSidebar({
       <SidebarContent />
       <SidebarFooter className="mt-auto">
         <SidebarMenu>
-          {/* 独立的版本按钮：点击检查并提示最新版本 */}
+          {/* 帮助菜单：整合版本信息与检查更新 */}
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={checkLatestRelease}>
-              <IconInfoCircle />
-              <span>{version ? `版本 v${version}` : "版本检查"}</span>
-            </SidebarMenuButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton>
+                  <IconHelp />
+                  <span>帮助与关于</span>
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="right" align="start" className="w-56">
+                <DropdownMenuLabel>软件信息</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => checkLatestRelease(false)}>
+                  <IconRefresh className="mr-2 size-4" />
+                  <span>检查更新</span>
+                  {version && <span className="ml-auto text-xs text-muted-foreground">v{version}</span>}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setAboutOpen(true)}>
+                  <IconInfoCircle className="mr-2 size-4" />
+                  <span>关于软件</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarMenuItem>
+
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -285,7 +329,6 @@ export function AppSidebar({
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
-                {/* 移除：更新下载入口，改由独立“版本”按钮提供 */}
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>主题模式</DropdownMenuLabel>
                 <DropdownMenuRadioGroup
@@ -353,7 +396,7 @@ export function AppSidebar({
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <AboutDialog open={aboutOpen} onOpenChange={setAboutOpen} />
     </Sidebar>
   );
 }
-

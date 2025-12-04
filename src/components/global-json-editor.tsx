@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import type { Project } from "@/types";
+import { useTheme } from "@/hooks/use-theme";
 
 type Props = {
   open: boolean;
@@ -18,6 +19,7 @@ export const GlobalJsonEditorDialog: React.FC<Props> = ({ open, onOpenChange, pr
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [text, setText] = useState<string>("");
+  const { resolvedTheme } = useTheme();
 
   // 初始化时载入为格式化 JSON 文本
   useEffect(() => {
@@ -59,13 +61,16 @@ export const GlobalJsonEditorDialog: React.FC<Props> = ({ open, onOpenChange, pr
     }
   };
 
+  const editorTheme = useMemo(() => {
+    return resolvedTheme === "dark" ? "vs-dark" : "light";
+  }, [resolvedTheme]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {/* 全屏弹窗：占满可视区域，移除内边距以便编辑器铺满 */}
-      <DialogContent fullscreen className="max-w-none w-[100vw] h-[100vh] p-0">
+      <DialogContent fullscreen className="max-w-none w-screen h-screen p-0">
         <DialogHeader>
-          <DialogTitle>编辑全局项目配置（Monaco）</DialogTitle>
-          <DialogDescription>编辑所有项目的顶层数组 JSON；保存后覆盖本地项目缓存</DialogDescription>
+          <DialogTitle>编辑全局项目配置</DialogTitle>
         </DialogHeader>
         {loading ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground px-4">
@@ -81,6 +86,7 @@ export const GlobalJsonEditorDialog: React.FC<Props> = ({ open, onOpenChange, pr
               defaultLanguage="json"
               value={text}
               onChange={(v) => setText(v ?? "")}
+              theme={editorTheme}
               options={{
                 automaticLayout: true,
                 formatOnPaste: true,

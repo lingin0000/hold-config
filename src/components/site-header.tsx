@@ -9,8 +9,6 @@ type SiteHeaderProps = {
   onProjectDelete?: () => void;
   onModifyProjectPath?: () => void;
   onOpenTemplateManager?: () => void;
-  // 新增：打开配置 JSON 编辑器
-  onOpenConfigJsonEditor?: () => void;
 };
 
 export function SiteHeader({
@@ -20,12 +18,6 @@ export function SiteHeader({
   onModifyProjectPath,
   onOpenTemplateManager,
 }: SiteHeaderProps) {
-  // 版本显示与更新检查状态
-
-  // 简单语义化版本比较函数（避免引入额外依赖）
-
-  // 检查 GitHub 最新版本
-
   return (
     <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
       <div className="flex w-full items-center gap-1 px-4 lg:gap-2 lg:px-6">
