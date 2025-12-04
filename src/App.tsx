@@ -7,7 +7,7 @@ import { CategoryTemplateDialog } from "./components/category-template-dialog";
 import { useProjectManager } from "./hooks/use-project-manager";
 import { useConfigManager } from "./hooks/use-config-manager";
 import { WorkArea } from "./components/work-area";
-import { QuickSwitchPanel } from "./components/quick-switch-panel";
+// 移除快速切换面板
 
 import { useApp } from "./hooks/use-app";
 import { CategoryTemplate } from "./types";
@@ -23,14 +23,7 @@ function App() {
     projectManager.projects
   );
 
-  // 当以悬浮窗模式打开（/?quick=1）时，渲染精简面板
-  const isQuick =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("quick") === "1";
-
-  if (isQuick) {
-    return <QuickSwitchPanel />;
-  }
+  // 已移除悬浮窗快速切换逻辑
   const {
     updateTrayMenu,
     handleTrayConfigApplication,

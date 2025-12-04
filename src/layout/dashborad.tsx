@@ -12,7 +12,10 @@ import { CategoryTemplateDialog } from '@/components/category-template-dialog'
 import { CategoryTemplateManager } from '@/components/category-template-manager'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { QuickSwitchPanel } from '@/components/quick-switch-panel'
+// 移除快速切换面板相关引用
+// import { QuickSwitchPanel } from '@/components/quick-switch-panel'
+import { ConfigJsonEditorDialog } from '@/components/config-json-editor'
+import { GlobalJsonEditorDialog } from '@/components/global-json-editor'
 import { useProjectManager } from '@/hooks/use-project-manager'
 import { useConfigManager } from '@/hooks/use-config-manager'
 import { useApp } from '@/hooks/use-app'
@@ -33,13 +36,15 @@ export default function Page() {
 
   const isBrowser = typeof window !== 'undefined'
   const isTauri = isBrowser && '__TAURI__' in window
-  const isQuick = isBrowser && new URLSearchParams(window.location.search).get('quick') === '1'
+  // 移除 quick=1 悬浮窗模式
   const [isTemplateManagerOpen, setIsTemplateManagerOpen] = useState(false)
+  // 配置 JSON 编辑器弹窗状态
+  const [isJsonEditorOpen, setIsJsonEditorOpen] = useState(false)
+  // 全局（所有项目）JSON 编辑器弹窗状态
+  const [isGlobalEditorOpen, setIsGlobalEditorOpen] = useState(false)
 
 
-  if (isQuick) {
-    return <QuickSwitchPanel />
-  }
+  // 已移除快速切换环境悬浮窗逻辑
 
   const {
     updateTrayMenu,
@@ -91,6 +96,7 @@ export default function Page() {
         onImportProject={() => projectManager.selectProjectFolder()}
         onImportAllConfigs={() => importAllConfigs()}
         onExportAllConfigs={() => exportAllConfigs()}
+        onOpenGlobalEditor={() => setIsGlobalEditorOpen(true)}
       />
       <SidebarInset>
         <SiteHeader
@@ -99,6 +105,8 @@ export default function Page() {
           onProjectDelete={projectManager.currentProject ? () => projectManager.deleteProject(projectManager.currentProject!.id) : undefined}
           onModifyProjectPath={modifyProjectPath}
           onOpenTemplateManager={() => setIsTemplateManagerOpen(true)}
+          // 新增：打开配置 JSON 编辑器入口
+          onOpenConfigJsonEditor={() => setIsJsonEditorOpen(true)}
         />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
@@ -177,6 +185,24 @@ export default function Page() {
 
         <Toaster />
       </SidebarInset>
+
+      {/* 配置 JSON 编辑器对话框 */}
+      <ConfigJsonEditorDialog
+        open={isJsonEditorOpen}
+        onOpenChange={setIsJsonEditorOpen}
+        projectPath={projectManager.currentProject?.path}
+      />
+
+      {/* 全局项目配置编辑器（Monaco） */}
+      <GlobalJsonEditorDialog
+        open={isGlobalEditorOpen}
+        onOpenChange={setIsGlobalEditorOpen}
+        projects={projectManager.projects}
+        onSaveProjects={(projects) => {
+          // 将编辑后的项目列表保存到本地缓存并刷新 UI
+          projectManager.saveProjectsToLocal(projects)
+        }}
+      />
     </SidebarProvider>
   )
 }

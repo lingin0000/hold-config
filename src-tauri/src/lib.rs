@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 use tauri::image::Image;
-use tauri::WebviewWindowBuilder;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
     tray::TrayIconBuilder,
@@ -195,60 +194,59 @@ fn build_tray_menu(
 ) -> Result<tauri::menu::Menu<tauri::Wry>, Box<dyn std::error::Error>> {
     let mut menu_builder = MenuBuilder::new(app);
 
-    // 直接显示每个项目为一级菜单项，点击进入快速切换页面
+    // 按 项目 -> 环境文件 -> 分类 -> 组 的层次构建
     for project in projects {
+        // 项目标题（作为分组标识）
         let project_title = format!("📁 {}", project.name);
-        let item = MenuItemBuilder::new(&project_title)
-            .id(&format!("quick-switch-project-{}", project.id))
+        let project_item = MenuItemBuilder::new(&project_title)
+            .id(&format!("label-project-{}", project.id))
             .build(app)?;
-        menu_builder = menu_builder.item(&item);
+        menu_builder = menu_builder.item(&project_item);
+
+        for env in project.env_files {
+            let env_item = MenuItemBuilder::new(&format!("🧾 {}", env.name))
+                .id(&format!("label-env-{}-{}", project.id, env.name))
+                .build(app)?;
+            menu_builder = menu_builder.item(&env_item);
+
+            for category in env.categories {
+                let cat_item = MenuItemBuilder::new(&format!("📂 {}", category.name))
+                    .id(&format!("label-cat-{}-{}-{}", project.id, env.name, category.name))
+                    .build(app)?;
+                menu_builder = menu_builder.item(&cat_item);
+
+                for group in category.groups {
+                    let group_item = MenuItemBuilder::new(&format!("⚙️ {}", group.name))
+                        .id(&format!(
+                            "tray-config-{}-{}-{}",
+                            group.project_id,
+                            group.env_file_path,
+                            group.id
+                        ))
+                        .build(app)?;
+                    menu_builder = menu_builder.item(&group_item);
+                }
+            }
+        }
+
+        // 每个项目后增加分隔符
+        menu_builder = menu_builder.separator();
     }
 
-    // 添加分隔符和退出
-    menu_builder = menu_builder.separator();
+    // 末尾保留退出项
     let quit_app = MenuItemBuilder::new("退出").id("quit-app").build(app)?;
     menu_builder = menu_builder.item(&quit_app);
 
     Ok(menu_builder.build()?)
 }
 
-// 创建（或显示）快速切换悬浮窗
-fn show_quick_switch_window(app: &tauri::AppHandle, project_id: Option<String>) {
-    if let Some(win) = app.get_webview_window("quick-switch") {
-        let _ = win.show();
-        let _ = win.set_focus();
-        return;
-    }
-    // 在 devUrl 环境下，加载同一个前端地址，附带查询参数 quick=1
-    let query = match project_id {
-        Some(pid) => format!("/?quick=1&project_id={}", pid),
-        None => "/?quick=1".to_string(),
-    };
-    let _ = WebviewWindowBuilder::new(
-        app,
-        "quick-switch",
-        tauri::WebviewUrl::App(query.into()),
-    )
-    .title("快速切换环境")
-    .inner_size(360.0, 480.0)
-    .always_on_top(true)
-    .resizable(false)
-    .decorations(true)
-    .build();
-}
+// 已移除快速切换悬浮窗功能
 
 // 创建初始托盘菜单
 fn create_tray_icon(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    // 创建基本菜单项
-    let quick_switch = MenuItemBuilder::new("快速切换环境")
-        .id("quick-switch")
-        .build(app)?;
+    // 创建初始菜单（只保留退出）
     let quit_app = MenuItemBuilder::new("退出").id("quit-app").build(app)?;
-
-    // 创建初始菜单
     let menu = MenuBuilder::new(app)
-        .item(&quick_switch)
-        .separator()
         .item(&quit_app)
         .build()?;
 
@@ -262,9 +260,6 @@ fn create_tray_icon(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
         .tooltip("配置管理器")
         .on_menu_event(|app, event| {
             match event.id().as_ref() {
-                "quick-switch" => {
-                    show_quick_switch_window(app, None);
-                }
                 "quit-app" => {
                     app.exit(0);
                 }
@@ -290,10 +285,6 @@ fn create_tray_icon(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Erro
                             }),
                         );
                     }
-                }
-                id if id.starts_with("quick-switch-project-") => {
-                    let project_id = id.strip_prefix("quick-switch-project-").unwrap().to_string();
-                    show_quick_switch_window(app, Some(project_id));
                 }
                 _ => {}
             }
