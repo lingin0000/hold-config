@@ -11,5 +11,5 @@ export async function openInDefaultBrowser(url: string) {
   // 参数校验：避免空字符串或无效 URL
   if (!url || typeof url !== "string") return;
   // 不指定特定浏览器，使用系统默认
-  await open(url);
+  await openUrl(url);
 }

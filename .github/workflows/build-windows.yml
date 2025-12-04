@@ -19,7 +19,33 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+      with:
+        fetch-depth: 0
+
+    - name: Generate Changelog
+      id: changelog
+      shell: bash
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          current_tag=${{ github.ref_name }}
+          prev_tag=$(git describe --tags --abbrev=0 ${current_tag}^ 2>/dev/null || echo "")
+          
+          if [ -n "$prev_tag" ]; then
+            echo "Generating changelog from $prev_tag to $current_tag"
+            log=$(git log --pretty=format:"- %s (%h)" ${prev_tag}..${current_tag})
+          else
+            echo "Generating changelog for initial tag $current_tag"
+            log=$(git log --pretty=format:"- %s (%h)" ${current_tag})
+          fi
+        else
+          echo "Generating changelog for manual build (last 10 commits)"
+          log=$(git log --pretty=format:"- %s (%h)" -n 10)
+        fi
+        
+        echo "content<<EOF" >> $GITHUB_OUTPUT
+        echo "$log" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
     - name: Install pnpm
       uses: pnpm/action-setup@v4
       with:
@@ -64,11 +90,11 @@ jobs:
           - **Windows 安装包**: `*.exe` 文件（NSIS 安装程序）
           
           ### 📋 更新内容
-          ${{ startsWith(github.ref, 'refs/tags/') && '详见下方自动生成的更新日志。' || '这是一个手动构建版本，用于测试目的。' }}
+          ${{ steps.changelog.outputs.content }}
           
           ### 🔧 安装说明
           1. 下载 `.exe` 文件
-          2. 右键选择\"以管理员身份运行\"
+          2. 右键选择"以管理员身份运行"
           3. 按照安装向导完成安装
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
