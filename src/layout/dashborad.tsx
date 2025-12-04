@@ -105,8 +105,6 @@ export default function Page() {
           onProjectDelete={projectManager.currentProject ? () => projectManager.deleteProject(projectManager.currentProject!.id) : undefined}
           onModifyProjectPath={modifyProjectPath}
           onOpenTemplateManager={() => setIsTemplateManagerOpen(true)}
-          // 新增：打开配置 JSON 编辑器入口
-          onOpenConfigJsonEditor={() => setIsJsonEditorOpen(true)}
         />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
@@ -145,7 +143,7 @@ export default function Page() {
         {/* 顶部模板管理抽屉（全局入口）*/}
         <Sheet open={isTemplateManagerOpen} onOpenChange={setIsTemplateManagerOpen}>
           <SheetContent side="right" className="w-[480px] sm:max-w-lg p-0 overflow-y-auto">
-            <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+            <div className="sticky top-0 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/75">
               <DialogHeader>
                 <div className="p-4">
                   <DialogTitle>分类模板管理</DialogTitle>
